@@ -1,0 +1,131 @@
+// ============================================================
+// γλώσσα/Español.zy — español (es)
+// Συμβόλαιο: κείμενο · φράση_πληθυσμού · φράση_τέλους ·
+//            φράση_κόσμου · φράση_ρυθμού
+// Τα κλειδιά είναι ελληνικά· η βάση είναι στο γλώσσα/Ελληνικά.zy.
+//
+// EN: γλώσσα/Español.zy — the español locale (es).
+// The keys are Greek; the base lives in γλώσσα/Ελληνικά.zy.
+// ============================================================
+
+# .γλώσσα_Español {
+
+    #> { κείμενο, φράση_πληθυσμού, φράση_τέλους, φράση_κόσμου, φράση_ρυθμού }
+
+    κείμενο(κλειδί) {
+        <~ ?? κλειδί {
+            "γλώσσα.όνομα"            => "Español"
+            "κατάσταση.γενιά"         => "gen"
+            "κατάσταση.πληθυσμός"     => "vivas"
+            "κατάσταση.κανόνας"       => "regla"
+            "κατάσταση.ρυθμός"        => "ritmo"
+            "κατάσταση.σχήμα"         => "figura"
+            "κατάσταση.τίποτα"        => "—"
+            "τρόπος.σύνταξη"          => "EDITAR"
+            "τρόπος.εκτέλεση"         => "CORRE "
+            "τρόπος.τέλος"            => "FIN   "
+            "πλήκτρο.κίνηση"          => "mover"
+            "πλήκτρο.εναλλαγή"        => "marcar"
+            "πλήκτρο.εκκίνηση"        => "correr/parar"
+            "πλήκτρο.βήμα"            => "paso"
+            "πλήκτρο.καθάρισμα"       => "limpiar"
+            "πλήκτρο.τυχαίο"          => "azar"
+            "πλήκτρο.σχήμα"           => "figura"
+            "πλήκτρο.θέμα"            => "tema"
+            "πλήκτρο.ταχύτητα"        => "velocidad"
+            "πλήκτρο.γλώσσα"          => "idioma"
+            "πλήκτρο.έξοδος"          => "salir"
+            "πλήκτρο.επιλογή"         => "elegir"
+            "πλήκτρο.άκυρο"           => "cancelar"
+            "τέλος.εξαφάνιση"         => "todo murió"
+            "τέλος.ακίνητο"           => "el mundo se congeló"
+            "τέλος.ταλάντωση"         => "el mundo oscila"
+            "τέλος.όριο"              => "fin de los turnos"
+            "τέλος.χρήστης"           => "lo paraste"
+            "μενού.σχήματα"           => "Elige una figura"
+            "μενού.γλώσσες"           => "Elige idioma"
+            "κατηγορία.ακίνητο"       => "vida quieta"
+            "κατηγορία.ταλαντωτής"    => "oscilador"
+            "κατηγορία.διαστημόπλοιο" => "nave"
+            "κατηγορία.μαθουσάλας"    => "matusalén"
+            "κατηγορία.κανόνι"        => "cañón"
+            "σχήμα.block"             => "bloque"
+            "σχήμα.beehive"           => "colmena"
+            "σχήμα.loaf"              => "hogaza"
+            "σχήμα.boat"              => "barca"
+            "σχήμα.tub"               => "tina"
+            "σχήμα.blinker"           => "parpadeante"
+            "σχήμα.toad"              => "sapo"
+            "σχήμα.beacon"            => "faro"
+            "σχήμα.pulsar"            => "púlsar"
+            "σχήμα.pentadecathlon"    => "pentadecatlón"
+            "σχήμα.glider"            => "planeador"
+            "σχήμα.lwss"              => "nave ligera"
+            "σχήμα.mwss"              => "nave media"
+            "σχήμα.hwss"              => "nave pesada"
+            "σχήμα.rpentomino"        => "r-pentominó"
+            "σχήμα.diehard"           => "hueso duro"
+            "σχήμα.acorn"             => "bellota"
+            "σχήμα.gosper"            => "cañón de Gosper"
+            "θέμα.emoji"              => "emojis"
+            "θέμα.block"              => "bloques"
+            "θέμα.ascii"              => "letras"
+            "σφάλμα.κανόνας_μορφή"    => "la regla se escribe B<números>/S<números>, p. ej. B3/S23"
+            "σφάλμα.κανόνας_κενό"     => "una mitad de la regla está vacía"
+            "σφάλμα.κανόνας_γράμμα"   => "cada mitad de la regla empieza por B o por S"
+            "σφάλμα.κανόνας_ψηφίο"    => "el número de vecinos es un dígito del 0 al 8"
+            "σφάλμα.άγνωστο_σχήμα"    => "no existe esa figura"
+            "σφάλμα.άγνωστο_θέμα"     => "no existe ese tema"
+            "σφάλμα.άγνωστη_γλώσσα"   => "no existe ese idioma"
+            "σφάλμα.άγνωστη_επιλογή"  => "opción desconocida"
+            "σφάλμα.λείπει_τιμή"      => "la opción necesita un valor"
+            "σφάλμα.αριθμός"          => "aquí hace falta un entero no negativo"
+            "σφάλμα.μικρή_οθόνη"      => "la pantalla es demasiado pequeña"
+            "χρήση.τίτλος"            => "El Juego de la Vida de Conway"
+            "χρήση.γραμμές"           => "alto del mundo"
+            "χρήση.στήλες"            => "ancho del mundo"
+            "χρήση.σχήμα"             => "empieza por una figura conocida, centrada"
+            "χρήση.κανόνας"           => "B3/S23 (por defecto), B36/S23, B2/S, ..."
+            "χρήση.θέμα"              => "emojis (por defecto), bloques, letras"
+            "χρήση.ρυθμός"            => "milisegundos por generación"
+            "χρήση.σπόρος"            => "semilla del azar"
+            "χρήση.τυχαίο"            => "llena el mundo al azar"
+            "χρήση.φραγμένο"          => "el mundo tiene bordes (si no, es un toro)"
+            "χρήση.τρέξε"             => "arranca corriendo en vez de editando"
+            "χρήση.γύροι"             => "para después de N generaciones"
+            "χρήση.γενιές"            => "corre N generaciones sin pantalla"
+            "χρήση.κάθε"              => "con --gens, informa cada K generaciones"
+            "χρήση.τύπωσε"            => "con --gens, imprime el mundo final"
+            "χρήση.γλώσσα"            => "el (por defecto), es, en, hi"
+            "χρήση.κατάλογος"         => "muestra figuras y temas"
+            "χρήση.βοήθεια"           => "este texto"
+            "χρήση.σχήματα"           => "Figuras"
+            "χρήση.περιορίστηκε"      => "el mundo se ajustó a la pantalla"
+
+            _                         => κλειδί
+        }
+    }
+
+    // El español distingue singular y plural, y "célula" es femenino.
+    φράση_πληθυσμού(ν) {
+        ? ν == 1 { <~ "{ν} célula viva" }
+        <~ "{ν} células vivas"
+    }
+
+    φράση_τέλους(αιτία, γενιά, περίοδος) {
+        ?? αιτία {
+            "εξαφάνιση" => { <~ "todo murió en la generación {γενιά}" }
+            "ακίνητο"   => { <~ "el mundo se congeló en la generación {γενιά}" }
+            "ταλάντωση" => { <~ "el mundo oscila con periodo {περίοδος}, desde la generación {γενιά}" }
+            "όριο"      => { <~ "fin en la generación {γενιά}" }
+            _           => { <~ "lo paraste en la generación {γενιά}" }
+        }
+    }
+
+    φράση_κόσμου(γραμμές, στήλες, τοροειδές) {
+        ? τοροειδές { <~ "{γραμμές}×{στήλες} toro" }
+        <~ "{γραμμές}×{στήλες} con bordes"
+    }
+
+    φράση_ρυθμού(χιλιοστά) { <~ "{χιλιοστά} ms" }
+}

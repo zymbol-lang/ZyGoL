@@ -1,0 +1,22 @@
+// ============================================================
+// πρότυπο/τερματικό.zy — the Greek layer over std/term.
+//
+// A pure re-export layer, resolved at load time, with no runtime
+// cost: the render code asks for πλάτος and never has to read an
+// English identifier. This is the code axis of I18N.md Part 1
+// applied to the standard library, exactly as GO/標準/端末.zy does
+// it for Japanese.
+// ============================================================
+
+# .πρότυπο_τερματικό {
+
+    <# std/term => τ
+
+    #> {
+        τ::width     => πλάτος
+        τ::pad_left  => δεξιά_στοίχιση
+        τ::pad_right => αριστερή_στοίχιση
+        τ::center    => κέντρο
+        τ::truncate  => κόψε
+    }
+}

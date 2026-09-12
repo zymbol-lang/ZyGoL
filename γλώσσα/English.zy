@@ -1,0 +1,131 @@
+// ============================================================
+// γλώσσα/English.zy — English (en)
+// Συμβόλαιο: κείμενο · φράση_πληθυσμού · φράση_τέλους ·
+//            φράση_κόσμου · φράση_ρυθμού
+// Τα κλειδιά είναι ελληνικά· η βάση είναι στο γλώσσα/Ελληνικά.zy.
+//
+// EN: γλώσσα/English.zy — the English locale (en).
+// The keys are Greek; the base lives in γλώσσα/Ελληνικά.zy.
+// ============================================================
+
+# .γλώσσα_English {
+
+    #> { κείμενο, φράση_πληθυσμού, φράση_τέλους, φράση_κόσμου, φράση_ρυθμού }
+
+    κείμενο(κλειδί) {
+        <~ ?? κλειδί {
+            "γλώσσα.όνομα"            => "English"
+            "κατάσταση.γενιά"         => "gen"
+            "κατάσταση.πληθυσμός"     => "alive"
+            "κατάσταση.κανόνας"       => "rule"
+            "κατάσταση.ρυθμός"        => "speed"
+            "κατάσταση.σχήμα"         => "pattern"
+            "κατάσταση.τίποτα"        => "—"
+            "τρόπος.σύνταξη"          => "EDIT  "
+            "τρόπος.εκτέλεση"         => "RUN   "
+            "τρόπος.τέλος"            => "DONE  "
+            "πλήκτρο.κίνηση"          => "move"
+            "πλήκτρο.εναλλαγή"        => "toggle"
+            "πλήκτρο.εκκίνηση"        => "run/stop"
+            "πλήκτρο.βήμα"            => "step"
+            "πλήκτρο.καθάρισμα"       => "clear"
+            "πλήκτρο.τυχαίο"          => "random"
+            "πλήκτρο.σχήμα"           => "pattern"
+            "πλήκτρο.θέμα"            => "theme"
+            "πλήκτρο.ταχύτητα"        => "speed"
+            "πλήκτρο.γλώσσα"          => "language"
+            "πλήκτρο.έξοδος"          => "quit"
+            "πλήκτρο.επιλογή"         => "choose"
+            "πλήκτρο.άκυρο"           => "cancel"
+            "τέλος.εξαφάνιση"         => "everything died"
+            "τέλος.ακίνητο"           => "the world froze"
+            "τέλος.ταλάντωση"         => "the world is oscillating"
+            "τέλος.όριο"              => "turn limit reached"
+            "τέλος.χρήστης"           => "you stopped it"
+            "μενού.σχήματα"           => "Choose a pattern"
+            "μενού.γλώσσες"           => "Choose a language"
+            "κατηγορία.ακίνητο"       => "still life"
+            "κατηγορία.ταλαντωτής"    => "oscillator"
+            "κατηγορία.διαστημόπλοιο" => "spaceship"
+            "κατηγορία.μαθουσάλας"    => "methuselah"
+            "κατηγορία.κανόνι"        => "gun"
+            "σχήμα.block"             => "block"
+            "σχήμα.beehive"           => "beehive"
+            "σχήμα.loaf"              => "loaf"
+            "σχήμα.boat"              => "boat"
+            "σχήμα.tub"               => "tub"
+            "σχήμα.blinker"           => "blinker"
+            "σχήμα.toad"              => "toad"
+            "σχήμα.beacon"            => "beacon"
+            "σχήμα.pulsar"            => "pulsar"
+            "σχήμα.pentadecathlon"    => "pentadecathlon"
+            "σχήμα.glider"            => "glider"
+            "σχήμα.lwss"              => "lightweight ship"
+            "σχήμα.mwss"              => "middleweight ship"
+            "σχήμα.hwss"              => "heavyweight ship"
+            "σχήμα.rpentomino"        => "R-pentomino"
+            "σχήμα.diehard"           => "diehard"
+            "σχήμα.acorn"             => "acorn"
+            "σχήμα.gosper"            => "Gosper glider gun"
+            "θέμα.emoji"              => "emoji"
+            "θέμα.block"              => "blocks"
+            "θέμα.ascii"              => "letters"
+            "σφάλμα.κανόνας_μορφή"    => "a rule is written B<counts>/S<counts>, e.g. B3/S23"
+            "σφάλμα.κανόνας_κενό"     => "one half of the rule is empty"
+            "σφάλμα.κανόνας_γράμμα"   => "each half of a rule starts with B or S"
+            "σφάλμα.κανόνας_ψηφίο"    => "a neighbour count is a digit from 0 to 8"
+            "σφάλμα.άγνωστο_σχήμα"    => "there is no such pattern"
+            "σφάλμα.άγνωστο_θέμα"     => "there is no such theme"
+            "σφάλμα.άγνωστη_γλώσσα"   => "there is no such language"
+            "σφάλμα.άγνωστη_επιλογή"  => "unknown option"
+            "σφάλμα.λείπει_τιμή"      => "the option needs a value"
+            "σφάλμα.αριθμός"          => "a non-negative whole number is needed here"
+            "σφάλμα.μικρή_οθόνη"      => "the screen is too small"
+            "χρήση.τίτλος"            => "Conway's Game of Life"
+            "χρήση.γραμμές"           => "world height"
+            "χρήση.στήλες"            => "world width"
+            "χρήση.σχήμα"             => "start from a named pattern, centred"
+            "χρήση.κανόνας"           => "B3/S23 (default), B36/S23, B2/S, ..."
+            "χρήση.θέμα"              => "emoji (default), blocks, letters"
+            "χρήση.ρυθμός"            => "milliseconds per generation"
+            "χρήση.σπόρος"            => "seed for --random"
+            "χρήση.τυχαίο"            => "fill the world at random"
+            "χρήση.φραγμένο"          => "the world has edges (default: it is a torus)"
+            "χρήση.τρέξε"             => "start running instead of editing"
+            "χρήση.γύροι"             => "stop after N generations"
+            "χρήση.γενιές"            => "run N generations with no screen"
+            "χρήση.κάθε"              => "with --gens, report every K generations"
+            "χρήση.τύπωσε"            => "with --gens, print the final world"
+            "χρήση.γλώσσα"            => "el (default), es, en, hi"
+            "χρήση.κατάλογος"         => "list patterns and themes"
+            "χρήση.βοήθεια"           => "this text"
+            "χρήση.σχήματα"           => "Patterns"
+            "χρήση.περιορίστηκε"      => "the world was fitted to the screen"
+
+            _                         => κλειδί
+        }
+    }
+
+    // English inflects the plural.
+    φράση_πληθυσμού(ν) {
+        ? ν == 1 { <~ "{ν} cell alive" }
+        <~ "{ν} cells alive"
+    }
+
+    φράση_τέλους(αιτία, γενιά, περίοδος) {
+        ?? αιτία {
+            "εξαφάνιση" => { <~ "everything died at generation {γενιά}" }
+            "ακίνητο"   => { <~ "the world froze at generation {γενιά}" }
+            "ταλάντωση" => { <~ "the world is oscillating with period {περίοδος}, since generation {γενιά}" }
+            "όριο"      => { <~ "stopped at generation {γενιά}" }
+            _           => { <~ "you stopped it at generation {γενιά}" }
+        }
+    }
+
+    φράση_κόσμου(γραμμές, στήλες, τοροειδές) {
+        ? τοροειδές { <~ "{γραμμές}×{στήλες} torus" }
+        <~ "{γραμμές}×{στήλες} bounded"
+    }
+
+    φράση_ρυθμού(χιλιοστά) { <~ "{χιλιοστά} ms" }
+}
