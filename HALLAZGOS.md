@@ -29,17 +29,17 @@
 | [BUG-GOL-001](#bug-gol-001) | BUG | `zymbol-compiler` | a name bound by destructuring is invisible inside a named function | **zyvm only** (zytw, zyjs correct) | **SUPERSEDED** by MEM-2 |
 | [BUG-GOL-002](#bug-gol-002) | BUG | `zymbol.js` (analyzer + runtime) | a file-level `_name()` function cannot be called from inside any block | **zyjs only** (zytw, zyvm correct) | **FIXED** 2026-09-29 |
 | [GAP-GOL-003](#gap-gol-003) | GAP | language | a program cannot construct an error value | all three | OPEN — design |
-| [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060 |
-| [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | **DOCUMENTED** 2026-09-29 |
+| [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060; the rest **REJECTED** |
+| [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | **CLOSED** — documented 2026-09-29 |
 | [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | **FIXED** 2026-09-29 |
 | [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | OPEN |
-| [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | OPEN |
+| [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | **DONE** — § 14 trap 3, checklist item 15 |
 | [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | OPEN — design |
 | [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | OPEN — design |
 | [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | OPEN — design |
-| [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | OPEN |
+| [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | **DONE** for the 22 that count failures |
 | [BUG-GOL-013](#bug-gol-013) | BUG | nav-path ranges | a negative index in a nav-path range raises in `zytw` and returns `[]` in silence under `zyvm`/`zyjs` | **all three disagree** | **FIXED** by GLB-012 |
-| [BUG-GOL-014](#bug-gol-014) | BUG | `zymbol.js` (`<\ … \>`) | in the browser, an unrecognised shell command returns a random nine-digit number instead of failing | **zyjs only** | OPEN — decision |
+| [BUG-GOL-014](#bug-gol-014) | BUG | `zymbol.js` (`<\ … \>`) | in the browser, an unrecognised shell command returns a random nine-digit number instead of failing | **zyjs only** | **FIXED** 2026-09-29 |
 
 Every reproduction below is a complete program. Run it as written. The tables
 of engine answers record what was measured **when the finding was filed**; a
@@ -295,11 +295,24 @@ The sibling construct already does the right thing: `</ file.zy />` in the same
 function throws *"a subscript runs another file as a process, and the browser
 has none"*.
 
-**Open — the author's decision**, because the remedy changes what playground
-examples do: refuse any command without a stand-in (as `</ … />` refuses), or
-keep a named list of entropy commands and refuse the rest. Either turns the
-examples that shell out into visible errors in the browser, which is what they
-already are in substance.
+**Resolution — FIXED, 2026-09-29 (author's decision D1).** Refuse any command
+with no stand-in, keep the stand-ins by name. `case 'BashExec'` now answers:
+
+| command | answer |
+|---|---|
+| `date +FORMAT` with `%Y %m %d %H %M %S %s %F %T %N %6N %%` | the whole format, from the clock — it used to answer `date +%Y-%m-%d` with the year alone |
+| `date +%N`, `echo $$`, `od -An -N2 -tu2 /dev/urandom [\| tr -d …]` | entropy of the same range as the command, which the games seed from |
+| `echo` of literal words, with nothing the shell would read as syntax | the words — `echo x \| bc` used to answer with the text of the pipeline |
+| anything else, including a command built from variables | `cannot run 'exit 3': a shell command runs as a process, and the browser has none` |
+
+The sweep before changing it: the four published games seed only from `date
++%N`, `echo $$` and `od … /dev/urandom | tr -d ' \n'`, all kept. GO's `printenv`,
+`ps` and `date +%s%6N` are in `棋戦.zy`, which is not in the package. One corpus
+file, `bugs/bug03_bashexec_void_statement.zy`, had agreed only because the
+browser pretended to run `true`, `mkdir` and `rmdir`; it now carries the
+`BASH_EXEC` exclusion every other shell file carries, with that history as its
+reason. Held by `web/tests/test_shell.mjs` (16 checks, in CI): against the old
+engine 11 of them fail.
 
 ---
 
@@ -382,8 +395,11 @@ wrong, and only the absence of any suppression makes the rest expensive.
 independently, by the author in `zyV.zy`: the warning now stays quiet when both
 bounds are integer literals — `-1` included — or constants, in all three engines,
 and still fires when either bound is computed. `@ i:-1..1 { }` prints no warning.
-The second half of the finding stands and is not closed: a *dynamic* bound that
-the program has already guarded still has no way to say so.
+The second half — a way to silence the warning on a *dynamic* bound the
+program has already guarded — is **REJECTED** (author's decision D6,
+2026-09-29). The descending range was kept *with* its warning by an earlier
+decision of the author's; a switch that silences it would undo that decision
+one call site at a time.
 
 ---
 
@@ -417,8 +433,9 @@ x.zy a --help` hands the program `["a", "--help"]`, and `--version` always
 reaches it. A bare `--` ends them, and it works for a `.zyp` as well
 (`zymbol run app.zyp -- --help`). `GUIDE.md` § 3 "CLI Arguments" now says so with
 five examples. Changing the rule itself — every argument after the file goes to
-the program — would make `zymbol run x.zy --vm` stop meaning the VM, which is a
-decision about the CLI and not taken here.
+the program — would make `zymbol run x.zy --vm` stop meaning the VM. The author
+kept the rule and closed the finding with the documentation (decision D6,
+2026-09-29).
 
 ---
 
@@ -654,6 +671,14 @@ Worth a line in §14's trap list, and worth a row in the §12 audit checklist:
 mechanically checkable — a locale file containing `0`–`9` between quotes is
 either this bug or a version number.
 
+**Resolution — DONE, 2026-09-29.** `USERAPPI18N.md` § 14 now has three traps
+(the third with the program above, checked on all three engines) and § 12 an
+item 15. The last sentence of this entry turned out to be wrong, and the
+document says so instead: a sweep of every application's locale files found 76
+candidates and three real cases — the rest were keys, syntax the user types in
+ASCII, and titles. Searchable, not decidable: a checklist item read by a person,
+not a gate.
+
 ### IDEA-GOL-012
 
 **Not one application suite in this workspace reports its result as an exit
@@ -706,6 +731,22 @@ modules and calls them, so no shell is involved at any point and a suite that
 throws takes the runner down with it. That shape is only possible because each
 suite returns its failure count — which is the same fact this finding is about,
 applied at the function level instead of the process level.)*
+
+**Resolution — DONE for every suite that counts its own failures, 2026-09-29.**
+The 44 split into two kinds, and only one of them has a result to return:
+
+| kind | suites | what changed |
+|---|---|---|
+| self-asserting, with a failure counter | 22 — 囲碁 8, चतुरङ्गम् 6, Serpiente 2, Hov veS 1, ZyBank 5 | the failure branch ends with `<~ 1` |
+| print values, judged by a golden | 22 — Zofía 12, ZyAudit 8, 囲碁's `性能試験` and `自戦試験` | nothing: they count nothing, so there is nothing to return. Making them self-asserting is separate work |
+
+The goldens did not move (a passing run prints what it printed). Checked the
+other way too: forcing one failure into `文字試験.zy` exits 1, restored it
+exits 0. The four runners that decided by text — `全試験.sh`, `todas.sh` of
+Serpiente, `Hoch.sh` (grep for `FAIL`/`FALLA`) and ZyBank's `todas.sh` (grep for
+`TODO BIEN`) — now read the exit status; `全試験.sh` also gained `棋譜試験`, a
+self-asserting suite it had never run. चतुरङ्गम्'s runner already compared
+goldens and was left alone.
 
 ---
 
