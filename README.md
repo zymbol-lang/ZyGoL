@@ -20,15 +20,20 @@ moment to change language — including in the middle of a run.
 
 ## Why this exists
 
-Not as a demo. This is a **measuring bench**: its job is to say what one generation
-of Life costs in each Zymbol engine, and to record what the language did and did
-not make easy. Findings: [HALLAZGOS.md](HALLAZGOS.md). Numbers: [`μέτρηση/`](μέτρηση/).
+Not as a demo. It began as a **measuring bench**: its job was to say what one
+generation of Life costs in each Zymbol engine, and to record what the language
+did and did not make easy. Findings: [HALLAZGOS.md](HALLAZGOS.md). Numbers:
+[`μέτρηση/`](μέτρηση/).
 
-It is deliberately **not** registered as a Language-Driven Validation project
-(`interpreter/LDV.md`) — LDV §6 says the method *"scales with domain distance, not
-with size"*, and this is the fifth terminal grid game after 囲碁, चतुरङ्गम्, Serpiente
-and Hov veS. Whether it earns that promotion is the author's call; the last section
-of HALLAZGOS.md states both sides.
+Since **2026-09-29** it is a Language-Driven Validation project, the ninth
+(`zymbol-design/LDV.md` § 5.1). It was held back at first on purpose — LDV § 6
+says the method *"scales with domain distance, not with size"*, and this is the
+fifth terminal grid game after 囲碁, चतुरङ्गम्, Serpiente and Hov veS — and
+escalated because its findings earned it: the distance that paid was not the grid
+but an application testing itself from inside the language. The last section of
+HALLAZGOS.md has the argument. Its suite is in the gate as `gol`
+(`zyquality/project/apps.toml`), and it is the one application there that agrees
+under all three engines.
 
 ---
 
@@ -131,7 +136,7 @@ zymbol run ζωή.zy -- --help          # `--` first: -h/--help never reach a pr
 | `-n, --turns N` | stop after N generations |
 | `--run` | start running instead of editing |
 | `-b, --batch` | run with no screen at all and report |
-| `--every K` / `--print` | with `--batch` |
+| `--every K` / `--print` / `--time` | with `--batch`; `--time` adds the elapsed milliseconds |
 | `-L, --lang CODE` | `el` `es` `en` `hi` |
 | `-l, --list` | patterns, themes and languages |
 
@@ -147,7 +152,7 @@ Zymbol identifier and a syntax error in a shell variable name.
 
 ## The four languages
 
-Built against [`interpreter/USERAPPI18N.md`](../interpreter/USERAPPI18N.md), all
+Built against `zymbol-design/USERAPPI18N.md`, all
 fourteen checklist items:
 
 - **The locale is module state, never a parameter.** Not one function in this

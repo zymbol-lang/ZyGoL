@@ -21,16 +21,20 @@ cualquier momento para cambiar de idioma, incluso a mitad de una simulación.
 
 ## Por qué existe
 
-No es una demostración. Es un **banco de medición**: su trabajo es decir lo que
-cuesta una generación de Vida en cada motor de Zymbol, y registrar qué le resultó
-fácil y qué no al lenguaje. Los hallazgos están en [HALLAZGOS.md](HALLAZGOS.md);
+No es una demostración. Empezó como **banco de medición**: su trabajo era decir lo
+que cuesta una generación de Vida en cada motor de Zymbol, y registrar qué le
+resultó fácil y qué no al lenguaje. Los hallazgos están en [HALLAZGOS.md](HALLAZGOS.md);
 los números en [`μέτρηση/`](μέτρηση/).
 
-**No** está registrado como proyecto de Validación Dirigida por el Lenguaje
-(`interpreter/LDV.md`): el §6 de ese documento dice que el método *«escala con la
-distancia de dominio, no con el tamaño»*, y éste es el quinto juego de rejilla en
-terminal después de 囲碁, चतुरङ्गम्, Serpiente y Hov veS. Si merece ese ascenso lo
-decide el autor; la última sección de HALLAZGOS.md expone los dos lados.
+Desde el **2026-09-29** es proyecto de Validación Dirigida por el Lenguaje, el
+noveno (`zymbol-design/LDV.md` § 5.1). Al principio se dejó fuera a propósito — el
+§6 dice que el método *«escala con la distancia de dominio, no con el tamaño»*, y
+éste es el quinto juego de rejilla en terminal después de 囲碁, चतुरङ्गम्,
+Serpiente y Hov veS — y se escaló porque sus hallazgos lo justificaron: la
+distancia que pagó no fue la rejilla sino una aplicación que se prueba a sí misma
+desde dentro del lenguaje. La última sección de HALLAZGOS.md tiene el argumento. Su
+suite está en el gate como `gol` (`zyquality/project/apps.toml`), y es la única
+aplicación ahí que coincide en los tres motores.
 
 ---
 
@@ -128,7 +132,7 @@ zymbol run vida.zy -- --help         # el `--` primero: -h/--help no llegan al p
 | `-n, --turns N` | parar después de N generaciones |
 | `--run` | arrancar corriendo en vez de editando |
 | `-b, --batch` | correr sin pantalla y dar el informe |
-| `--every K` / `--print` | con `--batch` |
+| `--every K` / `--print` / `--time` | con `--batch`; `--time` añade los milisegundos transcurridos |
 | `-L, --lang CÓDIGO` | `el` `es` `en` `hi` |
 | `-l, --list` | figuras, temas e idiomas |
 
@@ -145,7 +149,7 @@ es un error de sintaxis en un nombre de variable de shell.)
 
 ## Los cuatro idiomas
 
-Construido contra [`interpreter/USERAPPI18N.md`](../interpreter/USERAPPI18N.md),
+Construido contra `zymbol-design/USERAPPI18N.md`,
 los catorce puntos de la lista:
 
 - **El idioma es estado de módulo, nunca un parámetro.** Ni una función de este
