@@ -1,21 +1,24 @@
 # GoL — findings
 
 > **What this is.** The gap log for the Game of Life project, in the canonical
-> form `interpreter/LDV.md` § 5.2 asks for: one file named `HALLAZGOS.md`, four
+> form `zymbol-design/LDV.md` § 5.2 asks for: one file named `HALLAZGOS.md`, four
 > sections (`BUG` / `GAP` / `ERROR` / `IDEA`), a summary table, and identifiers
 > scoped by project from the first entry.
 >
-> **What this project is.** Not (yet) an LDV project. It was built as its own
-> measuring bench — the retro that opened it said a fifth terminal grid game
+> **What this project is.** An LDV project since **2026-09-29** — the ninth, and
+> the first to be *escalated* rather than started as one. It was built as its
+> own measuring bench: the retro that opened it said a fifth terminal grid game
 > would validate almost nothing, and `LDV.md` § 6 agrees in writing. The rule
-> agreed with the author: build it, measure it, and escalate to `LDV.md` **only
-> if the findings turn out to be worth it**. This file is the evidence for that
-> decision, not a claim that the decision was made.
+> agreed with the author was to escalate **only if the findings turned out to
+> be worth it**. They did, and not because of the grid — see the closing
+> section. From that date the suite is in the gate (`zyquality/project/apps.toml`,
+> id `gol`), indexed in `LDV.md` § 5.1, and part of ZyFmtCheck's body.
 >
-> **Status of every entry below: OPEN.** Nothing here has been fixed, and
-> nothing should be fixed on the strength of this document alone — the author
-> decides per finding whether to implement, defer or reject it (that is the
-> standing rule in this workspace, and `LDV.md` § 3 point 5 says the same).
+> **Status.** Each entry says its own, and a resolved one says how at its foot.
+> Nothing is closed on the strength of this document alone — the author decides
+> per finding whether to implement, defer or reject it (the standing rule in
+> this workspace, and `LDV.md` § 3 point 5 says the same). A GAP that asks a
+> design question stays OPEN until that question has an answer.
 
 ---
 
@@ -23,21 +26,24 @@
 
 | ID | Type | Module | What | Engines | Status |
 |----|------|--------|------|---------|--------|
-| [BUG-GOL-001](#bug-gol-001) | BUG | `zymbol-compiler` | a name bound by destructuring is invisible inside a named function | **zyvm only** (zytw, zyjs correct) | OPEN |
-| [BUG-GOL-002](#bug-gol-002) | BUG | `zymbol.js` (analyzer) | a file-level `_name()` function cannot be called from inside any block | **zyjs only** (zytw, zyvm correct) | OPEN |
-| [GAP-GOL-003](#gap-gol-003) | GAP | language | a program cannot construct an error value | all three | OPEN |
-| [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | OPEN |
-| [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | OPEN |
-| [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | OPEN |
+| [BUG-GOL-001](#bug-gol-001) | BUG | `zymbol-compiler` | a name bound by destructuring is invisible inside a named function | **zyvm only** (zytw, zyjs correct) | **SUPERSEDED** by MEM-2 |
+| [BUG-GOL-002](#bug-gol-002) | BUG | `zymbol.js` (analyzer + runtime) | a file-level `_name()` function cannot be called from inside any block | **zyjs only** (zytw, zyvm correct) | **FIXED** 2026-09-29 |
+| [GAP-GOL-003](#gap-gol-003) | GAP | language | a program cannot construct an error value | all three | OPEN — design |
+| [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060 |
+| [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | **DOCUMENTED** 2026-09-29 |
+| [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | **FIXED** 2026-09-29 |
 | [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | OPEN |
 | [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | OPEN |
-| [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | OPEN |
-| [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | OPEN |
-| [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | OPEN |
+| [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | OPEN — design |
+| [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | OPEN — design |
+| [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | OPEN — design |
 | [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | OPEN |
-| [BUG-GOL-013](#bug-gol-013) | BUG | nav-path ranges | a negative index in a nav-path range raises in `zytw` and returns `[]` in silence under `zyvm`/`zyjs` | **all three disagree** | OPEN |
+| [BUG-GOL-013](#bug-gol-013) | BUG | nav-path ranges | a negative index in a nav-path range raises in `zytw` and returns `[]` in silence under `zyvm`/`zyjs` | **all three disagree** | **FIXED** by GLB-012 |
+| [BUG-GOL-014](#bug-gol-014) | BUG | `zymbol.js` (`<\ … \>`) | in the browser, an unrecognised shell command returns a random nine-digit number instead of failing | **zyjs only** | OPEN — decision |
 
-Every reproduction below is a complete program. Run it as written.
+Every reproduction below is a complete program. Run it as written. The tables
+of engine answers record what was measured **when the finding was filed**; a
+resolved entry says at its foot what the engines answer now.
 
 ---
 
@@ -104,6 +110,29 @@ received — so this fires on the *idiomatic* form. It cost this project two
 rewrites before it was identified, and the register VM is the engine slated to
 become the default.
 
+**Resolution — SUPERSEDED by MEM-2 (verified 2026-09-29).** The function-capture
+rule this finding lived under was reversed: `PREMISES.md` MEM-2 makes a named
+function a self-contained space, and since 2026-09-13 all three engines refuse
+the read *before running*, with the same message whatever created the name:
+
+```
+error: 'H' is read from outside this function
+  = help: a function is a self-contained space: a value crosses into it as a parameter, never by being in view — pass 'H' as one
+```
+
+So the divergence cannot come back by this road, and the forms that remain
+legal — a lambda reading `H`, `V`, `R`, or `g(H, V)` passing them as parameters —
+agree in all three (`40`, `13`). The loop in `zymbol-compiler/src/lib.rs` still
+visits only `Statement::Assignment`; it is no longer reachable for a read,
+because the analyser stops the program first.
+
+What the finding taught is kept as a refusal of the crossing itself:
+`zyquality/corpus/errors/semantic/funcion_lee_lo_desestructurado.zy` — tuple,
+array and rest patterns, each read from a function, each refused by all three.
+It is the sibling of `funcion_lee_el_archivo.zy`, which only ever bound with
+`x = …`, and that is the whole lesson: the rule held, and the file that tested it
+did not cross the one feature where it broke.
+
 ---
 
 ### BUG-GOL-002
@@ -148,6 +177,21 @@ the documented wording.
 and that is the convention this workspace uses everywhere else. It was found by
 running this project's own test suite through `web/tests/run_one.mjs`; the
 suite had to rename four functions to get a three-engine comparison at all.
+
+**Resolution — FIXED in `zyjs`, 2026-09-29.** The rule was applied twice, and
+both places had to change: the analyser's `lookup` in `web/src/zymbol/zymbol.js`
+refused the name before anything ran, and `Env.get` refused it again at run time
+once the analyser let it through. Both now skip a name bound to a function
+declaration; both still refuse a variable. Measured after the change:
+
+| | `zytw` | `zyvm` | `zyjs` |
+|---|---|---|---|
+| `_f()` from a loop, an `if`, a nested loop, a function | runs | runs | runs |
+| `_v = 5` read from `@ 1 { }` | refused | refused | refused |
+| `_K := 7` read from `@ 1 { }` | refused | refused | refused |
+
+Held by `zyquality/corpus/functions/funcion_guion_bajo_en_bloque.zy`, which
+agrees on all three engines.
 
 ---
 
@@ -195,6 +239,67 @@ them are documented:
 | `s[1]` | `A` | **Char** |
 | `s$[1..2]` | `Ab` | **String** |
 | `s[1..2]` | `[A, b]` | **Array** — undocumented |
+
+**Resolution — FIXED by ZyDDT `GLB-012` (decided 2026-09-15, built 2026-09-22).**
+The author decided both halves in D1 and D3: a start or end that is not a
+positive position in a nav-path range is an **error** of family `##Index`, and an
+inverted range selects in descending order. All three engines now raise on
+`a[2..-2]`, `a[-2..-1]` and `"Abcde"[-2..-1]` with the tree-walker's message, and
+the slice `a$[2..-2]` keeps answering `[20, 30, 40]`. Held by the ZyDDT cell
+`runtime-index-nav/range-indices-in-nav-path-must-be` (`expect = "error"`).
+What this log added was the silent `[]` in two engines, which is gone.
+
+---
+
+### BUG-GOL-014
+
+**In the browser engine, a shell command it does not recognise returns a random
+nine-digit number — in silence, as if the command had printed it.**
+
+Found on 2026-09-29, re-measuring GAP-GOL-011 on three engines:
+
+```zymbol
+b = <\ "exit 3" \>
+>> "«" b "»" ¶
+```
+
+| Engine | Result |
+|--------|--------|
+| `zytw` | `«»` |
+| `zyvm` | `«»` |
+| `zyjs` | `«691156425»` — a different number on every run |
+
+**Cause.** The browser has no shell, and `web/src/zymbol/zymbol.js`, `case
+'BashExec'`, is a set of stand-ins: `date +%Y` and friends answer from the
+clock, `echo literal` answers with its text, and the entropy commands a seed is
+built from (`date +%N`, `echo $$`, `/dev/urandom`) answer with a number of the
+same order of magnitude — a deliberate and documented choice, since v0.0.9's
+integer is fail-closed and a seed is multiplied on the next line. The last line
+generalises it:
+
+```js
+// Anything else: entropy in the same nine-digit range …
+return mkStr(String(_rand(1e9)));
+```
+
+So *every* other command is treated as a request for entropy. The corpus and
+the example pool use `<\ \>` with `whoami`, `pwd`, `ls`, `cat file`, `test -f …
+&& echo si || echo no` and eight `sqlite3 … 'SELECT …'` — each of which, in the
+playground, returns a random number that the program then prints or parses as
+if it were the answer.
+
+**Why it is a BUG and not an environment exclusion.** An exclusion says *this
+engine cannot run this*. This engine runs it and answers wrongly, and `LDV.md`
+§ 2 names the silent wrong answer as red on the same footing as the incapacity.
+The sibling construct already does the right thing: `</ file.zy />` in the same
+function throws *"a subscript runs another file as a process, and the browser
+has none"*.
+
+**Open — the author's decision**, because the remedy changes what playground
+examples do: refuse any command without a stand-in (as `</ … />` refuses), or
+keep a named list of entropy commands and refuse the rest. Either turns the
+examples that shell out into visible errors in the browser, which is what they
+already are in substance.
 
 ---
 
@@ -273,6 +378,13 @@ speed.
 (`1..γραμμές` can be `1..0`, which counts down). Only the literal case is
 wrong, and only the absence of any suppression makes the rest expensive.
 
+**Resolution — FIXED by ZyDDT `GLB-060` (2026-09-25).** Found again,
+independently, by the author in `zyV.zy`: the warning now stays quiet when both
+bounds are integer literals — `-1` included — or constants, in all three engines,
+and still fires when either bound is computed. `@ i:-1..1 { }` prints no warning.
+The second half of the finding stands and is not closed: a *dynamic* bound that
+the program has already guarded still has no way to say so.
+
 ---
 
 ### GAP-GOL-005
@@ -296,6 +408,17 @@ someone finds it.
 behaviour. The gap is that nothing says so where a user would look, and that a
 packaged `.zyp` run as `zymbol run app.zyp --help` has the same problem with
 no obvious place to put the `--`.
+
+**Resolution — DOCUMENTED, 2026-09-29.** Measured before writing it: the
+interception is narrower than the title says. `run`'s own options (`--vm`,
+`--tw`, `--script`, `--keep-temp`, `-h`/`--help`) are recognised after the file
+name only **until the first argument that is not one of them** — `zymbol run
+x.zy a --help` hands the program `["a", "--help"]`, and `--version` always
+reaches it. A bare `--` ends them, and it works for a `.zyp` as well
+(`zymbol run app.zyp -- --help`). `GUIDE.md` § 3 "CLI Arguments" now says so with
+five examples. Changing the rule itself — every argument after the file goes to
+the program — would make `zymbol run x.zy --vm` stop meaning the VM, which is a
+decision about the CLI and not taken here.
 
 ---
 
@@ -323,6 +446,13 @@ and deleting it — which works, and is not a thing a harness should require of
 every caller.
 
 A `--args a b c` passthrough would close it; the engine side already exists.
+
+**Resolution — FIXED, 2026-09-29.** `node tests/run_one.mjs FILE.zy [--input FILE]
+[-- ARG...]`: everything after a bare `--` is the program's command line, spelled
+the way `zymbol run FILE.zy -- ARG...` spells it, so one argument vector reaches
+all three engines. Measured on this program:
+`ζωή.zy -- -p glider -r 10 -c 10 -b -n 3 --print -L hi` gives byte-identical
+output under `zytw`, `zyvm` and `zyjs`.
 
 ---
 
@@ -601,5 +731,20 @@ intersections, reproduced without setting out to reproduce it.
 That is the case for escalating. The case against is unchanged and is in the
 retro that opened the project: this is the fifth terminal grid game, `LDV.md`
 § 6 says domain distance is what pays, and a ninth gated application is a
-recurring maintenance bill. **The decision is the author's.** What is settled is
-that the findings exist and are reproducible.
+recurring maintenance bill. The decision was the author's, and it was taken on
+**2026-09-29**: escalate.
+
+What decided it is in the paragraph above, restated as `LDV.md` now records it:
+the grid found little, and the distance that paid was a domain the project moved
+into without setting out to — **an application testing itself from inside the
+language**. No earlier project had been asked to do that in Zymbol. The
+maintenance bill turned out lower than feared: the program crossed MEM-2 and
+HLZ-015 without a change, and its suite is the only one in the gate that agrees
+under all three engines, so it is also the only application the browser engine
+can be graded on.
+
+Escalating cost one change to the program: the batch mode printed `elapsed Nms`,
+a number that differs on every run and so cannot sit in a golden. It now prints
+it only with `--time`. The help text named a `--gens` option that does not exist
+(the option is `--batch`), in all four locales; that was corrected in the same
+change.
