@@ -28,7 +28,7 @@
 |----|------|--------|------|---------|--------|
 | [BUG-GOL-001](#bug-gol-001) | BUG | `zymbol-compiler` | a name bound by destructuring is invisible inside a named function | **zyvm only** (zytw, zyjs correct) | **SUPERSEDED** by MEM-2 |
 | [BUG-GOL-002](#bug-gol-002) | BUG | `zymbol.js` (analyzer + runtime) | a file-level `_name()` function cannot be called from inside any block | **zyjs only** (zytw, zyvm correct) | **FIXED** 2026-09-29 |
-| [GAP-GOL-003](#gap-gol-003) | GAP | language | a program cannot construct an error value | all three | OPEN — design |
+| [GAP-GOL-003](#gap-gol-003) | GAP | language | a program cannot construct an error value | all three | **FIXED** 2026-09-29 — `##Kind("…")` |
 | [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060; the rest **REJECTED** |
 | [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | **CLOSED** — documented 2026-09-29 |
 | [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | **FIXED** 2026-09-29 |
@@ -36,9 +36,11 @@
 | [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | **DONE** — § 14 trap 3, checklist item 15 |
 | [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | OPEN — design |
 | [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | OPEN — design |
-| [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | OPEN — design |
+| [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | **FIXED** 2026-09-30 — soft `##IO` |
 | [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | **DONE** for the 22 that count failures |
 | [BUG-GOL-013](#bug-gol-013) | BUG | nav-path ranges | a negative index in a nav-path range raises in `zytw` and returns `[]` in silence under `zyvm`/`zyjs` | **all three disagree** | **FIXED** by GLB-012 |
+| [BUG-GOL-015](#bug-gol-015) | BUG | `#?` count | the tree-walker counted a String's `#?` in bytes, and both Rust engines an error's message | **zytw** strings; **zytw, zyvm** errors | **FIXED** 2026-09-29 |
+| [GAP-GOL-016](#gap-gol-016) | GAP | language | an error value's message cannot be read back without taking its display apart | all three | **FIXED** 2026-09-29 — `##Kind(m) =>` |
 | [BUG-GOL-014](#bug-gol-014) | BUG | `zymbol.js` (`<\ … \>`) | in the browser, an unrecognised shell command returns a random nine-digit number instead of failing | **zyjs only** | **FIXED** 2026-09-29 |
 
 Every reproduction below is a complete program. Run it as written. The tables
@@ -316,9 +318,101 @@ engine 11 of them fail.
 
 ---
 
-## GAP
+### BUG-GOL-015
 
-### GAP-GOL-003
+**`#?` counted in bytes where the language counts code points.**
+
+Found by comparing the three engines on the constructor above:
+
+```zymbol
+s = "vacía"
+>> s#? ¶
+e = ##Parse("vacía")
+>> e#? ¶
+```
+
+| | `zytw` | `zyvm` | `zyjs` |
+|---|---|---|---|
+| `s#?` | `(##", 6, vacía)` | `(##", 5, vacía)` | `(##", 5, vacía)` |
+| `e#?` | `(##Parse, 6, …)` | `(##Parse, 6, …)` | `(##Parse, 5, …)` |
+
+`$#` gives 5 in all three. So the tree-walker's `#?` on a String disagreed with
+the other two engines, and both Rust engines counted an error's message in
+bytes. Nobody saw either: no corpus file asked `#?` of a non-ASCII string, and
+every error message the standard library produces is ASCII.
+
+**Resolution — FIXED, 2026-09-29.** Code points in both places, both Rust
+engines (`data_ops.rs`, and `error_message_len` in the VM). Held by
+`corpus/strings/tipo_cuenta_puntos_de_codigo.zy` — Spanish, Greek and Chinese.
+
+---
+
+### GAP-GOL-016
+
+**An error value's message cannot be read back — only printed.**
+
+Found applying GAP-GOL-003 to this program. `κ::κανόνας` and `σ::πάρε` return a
+catalogue key when the input is wrong (the core never writes text a person will
+read), and the caller translates it. With the constructor they would return
+`##Κανόνας("σφάλμα.κανόνας_κενό")` — and then the caller needs the key back:
+
+```zymbol
+κανόνας(κείμενο) {
+    ? κείμενο$# == 0 { <~ ##Κανόνας("σφάλμα.κανόνας_κενό") }
+    <~ κείμενο
+}
+r = κανόνας("")
+? r$! {
+    (είδος, _ν, _τ) = r#?
+    κείμενο = "" r
+    κλειδί = κείμενο$[είδος$# + 2..-2]
+    >> "κλειδί: " κλειδί ¶
+}
+```
+
+That runs, on all three engines, and it is the finding: the only way to the
+message is to turn the error into its display and cut the `##Κανόνας(` and `)`
+off by hand. The kind is readable — `#?` hands it over as text — and the message
+is not. Inside `:!` there is `_err`; a built error never reaches a `:!`, which
+is the point of it being a value.
+
+It reaches past this program. D2 (GAP-GOL-011) will return a failed command as
+`##IO(…)` carrying its exit status: the status will be in the message, where
+nothing can read it either.
+
+**Resolution — FIXED, 2026-09-29 (author's decision D7).** The spelling that
+builds an error takes it apart, as a pattern of `??`:
+
+```zymbol
+κανόνας = κ::κανόνας(όνομα_κανόνα)
+?? κανόνας {
+    ##Κανόνας(κλειδί) => { σφάλμα = κλειδί }
+    _                 => { (γέννηση, επιβίωση) = κανόνας }
+}
+```
+
+That is `εκκίνηση.zy` now. `##Kind(m)` matches an error of that kind and puts
+its message in `m`; `##Kind(_)` and `##Kind` match the kind alone, as `:!` does.
+Three rules came with it, each decided rather than left to the engines:
+
+- the binding is a **birth like `m = …`**: a visible `m` is assigned, never
+  shadowed — `PREMISES.md` MEM-7 settled that without a new decision, and the
+  first version, which shadowed, was wrong against it;
+- it **stands alone** in its arm: refused inside `||` (the name would not exist
+  when the other alternative matched) and inside a list pattern;
+- the message is **bound, never compared**: `##A("x") =>` is refused.
+
+It is the first pattern in the language that creates a name, so GUIDE § 7 now
+lists seven kinds and LLM.md no longer says there are no binding patterns.
+Held by `corpus/errors/catchable/leer_mensaje_de_error.zy`, three forms in
+`reject/errors/`, and two ZyDDT cells in `error-flow`.
+
+Found on the way, and not this finding's: `@ m:[1, 2]` after `m = "fuera"`
+warns `unused variable 'm'` although the program reads it afterwards — the
+analyser retires the outer declaration when a loop re-declares the name. The
+pattern binding avoided it by assigning a visible name instead of declaring it;
+the loop still has it.
+
 
 **A program cannot construct an error value.**
 
@@ -353,6 +447,25 @@ cannot be forgotten silently the way an unread tuple slot can.
 leaving the language, the language did not support it."* The concept here is
 "this data is malformed, and the caller decides what to do", and the language
 expresses it for its own standard library and not for a program written in it.
+
+**Resolution — FIXED, 2026-09-29 (author's decision D3).** `##Kind("message")`
+in an expression builds the error, in all three engines: the spelling an error
+prints as, and the kind a `:!` matches. It is a value — `$!` is `#1`, `$!!`
+propagates it, no `:!` sees it — the kind is any name in any script, and the
+message is a String (refused before running when the analyser knows it is not,
+`##Type` at run time otherwise). Written together, like every operator since
+GLB-031. Held by `corpus/errors/catchable/construir_error.zy`,
+`mensaje_de_error_en_ejecucion.zy`, `errors/semantic/mensaje_de_error_no_es_texto.zy`,
+two forms in `reject/errors/`, five ZyDDT cells in `error-flow`, and GUIDE § 16.
+
+Applying it here, which is what LDV asks before a finding closes, **did not
+work at first**: this program's two functions return a catalogue key, and a
+caller could not read the key back out of the error — GAP-GOL-016. With that
+closed the same day, `κ::κανόνας` returns `(γεννήσεις, επιβιώσεις)` or
+`##Κανόνας(κλειδί)`, `σ::πάρε` the cells or `##Σχήμα(κλειδί)`, and the tuples
+with an empty-string slot for "no error" are gone from all seven callers. The
+suite's golden did not move, and the command line's errors read the same in all
+four locales on all three engines.
 
 ---
 
@@ -570,6 +683,44 @@ run something that is *not* Zymbol has no equivalent escape.
 `zymbol run` itself gets this right: `<~ 2` at the top level reaches the
 operating system, and GUIDE.md § 3 documents it. So Zymbol can *report* an exit
 status and cannot *read* one.
+
+**Resolution — FIXED, 2026-09-30 (author's decisions D2 and D8).** A status
+other than 0 is a soft `##IO` error that carries it, in both Rust engines, and
+`##IO(m) =>` (GAP-GOL-016) reads it back:
+
+| | before | now |
+|---|---|---|
+| `<\ "exit 3" \>` | `""` | `##IO(exit 3)` |
+| `<\ "echo err >&2; exit 2" \>` | `"err"` | `##IO(exit 2: err)` — stderr, else stdout |
+| `</ sub.zy />` where sub gives `<~ 3` | its output, the 3 lost | `##IO(exit 3: <its output>)` |
+| `</ sub.zy />` where sub fails | raised | raised, unchanged (GLB-017 I) |
+
+The subscript half met an earlier decision: GLB-017 I (2026-09-26) raises a
+subscript that fails. D8 kept it — only a status the subscript *gives* becomes a
+value; a crash is not a status it gave. `<\ \>` turns every status other than 0
+into a value, because a shell cannot tell a failure from a crash.
+
+**What the change broke, measured before and after.** The corpus: nothing. Seven
+of eight applications: nothing. ZyAudit: six of eight suites — and not because
+of D2. Its suites read `源文件/计算器.zy` and `i18n.json` relative to where they
+run, and `zyq` runs every program in an empty scratch directory. So in the gate
+the auditor **had never audited anything**: six goldens recorded the shell's
+`sh: 1: cannot open 源文件/计算器.zy: No such file`, `函数=0` and blank labels as
+the result, and matched them every run. D2 turned that text into `##IO` errors,
+the goldens stopped matching, and the suite's long run of passing on a
+missing file became visible. Fixed by the author's decision D9: an application
+declares `fixtures` in `zyquality/project/apps.toml`, `zyq --fixture` copies them
+into each scratch directory, and the six goldens were re-recorded from a real
+run — `总计=60`, nine functions with their lines and arities, the report in
+three languages. The re-recording was reviewed line by line; nothing in the new
+goldens is a failure message.
+
+Four places depended on `""` for a failure that is part of their normal flow,
+and now test `$!`: ZyAudit's `printenv GEMINI_API_KEY`, its `grep … | grep -v`
+that finds no function, its `jq` lookup (whose documented fallback is the empty
+string), and 囲碁's `printenv ZYGO_KIFU` in `棋戦.zy`. Held by
+`corpus/errors/catchable/estado_de_salida.zy` (with two subscripts beside it) and
+two ZyDDT cells in `environment`.
 
 ---
 
