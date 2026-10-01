@@ -32,7 +32,7 @@
 | [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060; the rest **REJECTED** |
 | [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | **CLOSED** — documented 2026-09-29 |
 | [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | **FIXED** 2026-09-29 |
-| [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | OPEN |
+| [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | **MEASURED** — 14 %, a cost cell guards it |
 | [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | **DONE** — § 14 trap 3, checklist item 15 |
 | [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | **FIXED** 2026-09-30 — `zymbol run --keys` |
 | [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | **FIXED** 2026-09-30 — `</ app.zy args… />` |
@@ -828,6 +828,33 @@ Three readings, and each is worth stating separately:
 **Not a defect.** Filed as IDEA because the actionable part is a VM
 optimisation target, and because the three numbers together are a better
 answer than "~4.4× on fib(35)" to the question of what `--vm` is worth.
+
+**Re-measured and held, 2026-09-30 (phase 4 of the plan).** The VM moved on
+since this was filed: the same bench gives A/B **1.22** today, and the run is
+twice as fast in absolute terms (618 → 279 ms at side 100). And the bench
+overstates the call — its variant A also takes the bounded-world branch and a
+sixth argument that B never pays. A clean pair, written for the purpose
+(`zyquality/cost/casos/llamada_por_celda.zy.in` against `en_linea.zy.in`:
+identical work, the count called or inline), measures **1.14 under the VM and
+0.87 under the tree-walker**, which is faster *with* the call.
+
+What the 14 % is made of, as far as it could be taken apart without a profiler
+(this machine has neither `perf` nor `valgrind`):
+
+| measured | share |
+|---|---|
+| the call machinery itself — the same control plus an empty five-argument call per cell | 2–5 % |
+| a 34-register frame prepared and dropped instead of a 5-register one | ~55 of ~280 ns per call |
+| the six auto-free `LoadUnit`s before the callee's `<~` (redundant: the return truncates the frame) | removed, **no measurable change**, put back |
+| everything else | not located |
+
+An instruction count says the call version executes only 3.7 % more
+instructions than the inline one, so most of the residue is not work but how it
+is laid out — the hot loop split across two chunks, the frame's footprint.
+Locating it needs a profiler. What stays is the cell,
+`call/function-in-hot-loop` (`time-ratio`, limit 1.30), so the call path cannot
+get dearer without the gate saying so. Kept OPEN as an idea: the next step is a
+profiled run, not a guess.
 
 ---
 
