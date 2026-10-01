@@ -220,21 +220,22 @@ podido decir qué suite falló ([GAP-GOL-011](HALLAZGOS.md#gap-gol-011)).
 
 La línea de órdenes se prueba llamando directamente a
 `εκκίνηση::ξεκίνα(idioma, args)`, así que tampoco hace falta shell para conducir el
-programa — aunque esos 20 casos solo pueden comprobar el **código de salida**,
-porque un programa no puede capturar lo que imprime su propio código
-([GAP-GOL-010](HALLAZGOS.md#gap-gol-010)). Lo que el programa *dijo* se imprime
-donde un humano lo ve y no lo comprueba nadie.
+programa; esos 20 casos comprueban el **código de salida**. Lo que el programa
+*dice* lo comprueba [`έξοδος.zy`](δοκιμές/έξοδος.zy), que lo ejecuta como
+subscript con sus propios argumentos, `</ ../ζωή.zy -L es --list />`, y contrasta
+el texto con el catálogo del propio programa — 20 comprobaciones
+([GAP-GOL-010](HALLAZGOS.md#gap-gol-010), cerrado el 2026-09-30).
 
-**Una prueba no está en Zymbol, y no puede estarlo.**
-[`δοκιμές/οθόνη.py`](δοκιμές/οθόνη.py) conduce el editor por un pty de verdad
-—dieciséis casos, incluidos el catálogo de figuras, el cambio de idioma en vivo,
-las condiciones de parada y las cifras en devanagari, y pilló tres defectos reales
-en sus primeras ejecuciones. No está ahí porque Python fuera cómodo: `>>|` da
-error si el proceso no tiene TTY, a `<<|` no se le puede dar una secuencia de
-teclas escrita, y nada en el lenguaje lanza un proceso, así que **el editor es la
-única parte de este programa a la que ningún código Zymbol llega**
-([GAP-GOL-009](HALLAZGOS.md#gap-gol-009)). Seis aplicaciones de este taller
-dibujan una pantalla; ninguna la prueba.
+**El editor también se prueba, y ya no en Python.** Cada caso de
+[`δοκιμές/οθόνη/`](δοκιμές/οθόνη/) es un programa de dos líneas que llama a
+`εκκίνηση::ξεκίνα` con sus argumentos, un fichero `.keys` con las teclas que
+pulsaría una persona y un golden con el último fotograma: `zymbol run --keys`
+dibuja `>>|` en una pantalla virtual de 24×80 en vez de tomar un terminal
+([GAP-GOL-009](HALLAZGOS.md#gap-gol-009), cerrado el 2026-09-30). Dieciséis casos
+—el catálogo de figuras, el cambio de idioma en vivo, las condiciones de parada,
+las cifras en devanagari— juzgados en los dos motores Rust por el mismo gate que
+todo lo demás. Sustituyeron a `δοκιμές/οθόνη.py`, que conducía el editor por un
+pty, y con él al último fichero de este programa que no era Zymbol.
 
 **Los valores esperados no salen de este programa.** Los periodos, el
 desplazamiento del planeador, las poblaciones del r-pentominó en las generaciones

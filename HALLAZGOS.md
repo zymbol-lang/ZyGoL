@@ -34,8 +34,8 @@
 | [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | **FIXED** 2026-09-29 |
 | [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | OPEN |
 | [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | **DONE** — § 14 trap 3, checklist item 15 |
-| [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | OPEN — design |
-| [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | OPEN — design |
+| [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | **FIXED** 2026-09-30 — `zymbol run --keys` |
+| [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | **FIXED** 2026-09-30 — `</ app.zy args… />` |
 | [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | **FIXED** 2026-09-30 — soft `##IO` |
 | [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | **DONE** for the 22 that count failures |
 | [BUG-GOL-013](#bug-gol-013) | BUG | nav-path ranges | a negative index in a nav-path range raises in `zytw` and returns `[]` in silence under `zyvm`/`zyjs` | **all three disagree** | **FIXED** by GLB-012 |
@@ -621,6 +621,32 @@ screen. **None of them tests it.**
 is a design question and not this log's to answer. What is recorded here is the
 incapacity and what it costs.)*
 
+**Resolution — FIXED, 2026-09-30 (author's decisions D5 and D11).** A headless
+mode in the CLI, asked for and never guessed: `zymbol run app.zy --keys app.keys`
+draws `>>|` on a virtual 24×80 screen, feeds `<<|` and `<<|?` from the file, and
+writes each block's last frame to the output as text. Both Rust engines share one
+implementation (`zymbol_common::vscreen`), so a frame cannot mean two things.
+Without `--keys`, `>>|` with no terminal still fails — GLB-018 C stands.
+
+Two things were measured before building it, and both changed the plan:
+
+- **D5 had assumed the screen could be reached from a subscript.** It cannot: a
+  subscript receives the program's arguments (D10), never `zymbol run`'s options.
+  The in-process road was the one that worked — the suites already call
+  `εκκίνηση::ξεκίνα(lang, args)`, which enters `>>|` like the program does.
+- **"The last frame" was not enough.** Two of the sixteen cases check a picker
+  that is closed by the time the program ends. The key script gained `SHOW`,
+  which writes the frame of that moment; `WAIT n` makes a polling loop advance by
+  polls rather than by a clock, so no case depends on timing.
+
+`δοκιμές/οθόνη/` holds the sixteen cases of the old `οθόνη.py`, each a two-line
+program, a `.keys` file and a golden, graded on both Rust engines by the same
+gate as every other golden; `zyq` passes `--keys` when a `.keys` file sits beside
+the program. `οθόνη.py` is deleted, and with it the last file of GoL that was not
+Zymbol. `zyquality/tui/`'s pty driver stays: it tests the real terminal path —
+how crossterm decodes an arrow — which a virtual screen by design does not touch.
+Held by `corpus/output/pantalla_virtual.zy` with its key script.
+
 ---
 
 ### GAP-GOL-010
@@ -652,6 +678,29 @@ The workaround used everywhere else in this workspace is a golden file, and a
 golden needs a runner outside the language to capture the output and compare it.
 That is the same dependency GAP-GOL-009 describes, arriving from the other
 direction: **the language cannot observe itself running.**
+
+**Resolution — FIXED, 2026-09-30 (author's decisions D4 and D10), by composition
+and without a new mark.** D4 asked for a measurement before any capture block
+was designed: could `</ … />`, now that it returns a status (GAP-GOL-011), test
+what a program says? It could not, for one reason — a subscript inherited its
+caller's arguments and could not be given its own; `</ ./x.zy uno />` was
+`file not found: ./x.zy uno`. D10 supplied that piece and nothing else: the words
+after the path are the subscript's command line, literal like the path, so
+`zymbol package` and AGT-3 still read the reachable program without running it.
+
+`δοκιμές/έξοδος.zy` is the suite this finding said could not be written. It runs
+`ζωή.zy` as a subscript, one literal command line per check, and asserts what it
+says against the program's own catalogue: the pattern list in all four
+languages, four malformed rules each refused in the right language with status
+2, an unknown pattern and an unknown option, and a batch run. 20 checks, both
+Rust engines, its own golden in the gate. It is a script of its own and not a
+module of `όλα.zy`, because the browser engine has no process to run a
+subscript in, and `όλα.zy` is the suite that agrees on all three.
+
+It caught one wrong expectation on its first run — `B/S23` is a valid rule, not
+an empty half — which is the other half of the point: a check that can fail.
+The in-process half of the finding — capturing what a function *in this
+process* prints — remains without a mechanism, and nothing here needed one.
 
 ---
 
