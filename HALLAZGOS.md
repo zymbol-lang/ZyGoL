@@ -42,6 +42,7 @@
 | [BUG-GOL-014](#bug-gol-014) | BUG | `zymbol.js` (`<\ … \>`) | in the browser, an unrecognised shell command returns a random nine-digit number instead of failing | **zyjs only** | **FIXED** 2026-09-29 |
 | [BUG-GOL-015](#bug-gol-015) | BUG | `#?` count | the tree-walker counted a String's `#?` in bytes, and both Rust engines an error's message | **zytw** strings; **zytw, zyvm** errors | **FIXED** 2026-09-29 |
 | [GAP-GOL-016](#gap-gol-016) | GAP | language | an error value's message cannot be read back without taking its display apart | all three | **FIXED** 2026-09-29 — `##Kind(m) =>` |
+| [ERROR-GOL-017](#error-gol-017) | ERROR | `zymbol-semantic` | a loop iterator over a visible name is analysed as a new variable: the outer one is reported unused | **zytw, zyvm** (zyjs silent) | **OPEN** |
 
 Every reproduction below is a complete program. Run it as written. The tables
 of engine answers record what was measured **when the finding was filed**; a
@@ -638,6 +639,8 @@ It caught one wrong expectation on its first run — `B/S23` is a valid rule, no
 an empty half — which is the other half of the point: a check that can fail.
 The in-process half of the finding — capturing what a function *in this
 process* prints — remains without a mechanism, and nothing here needed one.
+**Residual, not tracked by ID:** it becomes a finding of its own the day an
+application needs it, and not before.
 
 ---
 
@@ -771,20 +774,84 @@ Held by `corpus/errors/catchable/leer_mensaje_de_error.zy`, three forms in
 `reject/errors/`, and two ZyDDT cells in `error-flow`.
 
 Found on the way, and not this finding's: `@ m:[1, 2]` after `m = "fuera"`
-warns `unused variable 'm'` although the program reads `m` afterwards. The loop
-does not shadow the outer `m`, it assigns it — after the loop `m` is `2`, not
-`"fuera"` — so the value `"fuera"` is indeed never read, and what is wrong is
-the message: it calls a variable unused when what it means is a value
-overwritten before it is read. `zytw` and `zyvm` give it; `zyjs` gives no
-warning at all (re-measured 2026-10-01). The pattern binding avoided it by
-assigning a visible name instead of declaring it; the loop still has it.
+warns `unused variable 'm'` although the program reads `m` afterwards — the
+analyser declares a new `m` for the loop where the engines assign the visible
+one. The pattern binding avoided it by assigning a visible name instead of
+declaring it; the loop still has it. Filed as ERROR-GOL-017.
 
 ---
 
 ## ERROR
 
-None. No diagnostic in this project was wrong about what it pointed at — the
-one false positive is a warning, and it is GAP-GOL-004.
+### ERROR-GOL-017
+
+**A loop iterator over a name that is already visible is analysed as a new
+variable. The engines assign the visible one, and the analyser reports it
+unused.**
+
+Found on 2026-09-29 while building GAP-GOL-016, filed on 2026-10-01:
+
+```zymbol
+m = "fuera"
+@ m:[1, 2] { >> m ¶ }
+>> m ¶
+```
+
+| Engine | Output | Diagnostic |
+|--------|--------|------------|
+| `zytw` | `1` `2` `2` | `warning: unused variable 'm'` at line 1 |
+| `zyvm` | `1` `2` `2` | `warning: unused variable 'm'` at line 1 |
+| `zyjs` | `1` `2` `2` | none |
+
+All three engines agree on what runs: the loop writes the `m` that is in view,
+and after it `m` is `2`. That is the rule — `PREMISES.md` MEM-7: *"A light
+environment introduces no exception: it has no namespace of its own, so a block
+cannot hold a second thing under a name its strong environment already uses."*
+The diagnostic disagrees with what runs. The program reads `m` on its last line,
+and the warning says it is never used.
+
+**It is not a dead-store warning that happens to be worded badly.** A plain
+overwrite gets no such warning in any engine:
+
+```zymbol
+m = "fuera"
+m = 5
+>> m ¶
+```
+
+All three answer `warning: type mismatch: 'm' was String but assigned Int`, and
+nothing about `unused`. The loop in the first program makes the same change, a
+String to an Int, and no engine says so. Both symptoms have one cause: the
+analyser sees two variables where the program has one.
+
+| Form | `zytw` / `zyvm` | `zyjs` |
+|---|---|---|
+| `@ m:[1, 2]` after `m = "fuera"`, `m` read after the loop | `unused variable 'm'` — **false** | none |
+| `@ m:1..2` after `m = 0`, `m` read after the loop | `unused variable 'm'` — **false** | none |
+| `@ (k, v):[(1, 2), (3, 4)]` after `k = "fuera"`, `k` read after | `unused variable 'k'` — **false** | none |
+| `m` read **before** the loop as well | none | none |
+| `m` never read after the loop | `unused variable 'm'` | `unused variable 'm'` |
+| `m = "fuera"` then `m = 5` | `type mismatch` | `type mismatch` |
+| `@ m:[1, 2]` after `m = "fuera"` (String → Int) | no `type mismatch` | no `type mismatch` |
+
+**Cause.** `crates/zymbol-semantic/src/variable_analysis.rs`, the
+`Statement::Loop` arm: the iterator is declared *inside* the loop's scope, and
+so is every name of an iterator pattern. The only exception is a constant —
+GLB-056 found that declaring the iterator retired a constant and reported it
+unused while the program read it, and skipped it. That fixed one case of the
+same fault. A visible variable is the general case and still goes through
+`declare_variable`. `zyjs` appears to model the loop as an assignment, which
+would explain why it is the engine that does not warn.
+
+**Why no suite caught it.** What runs agrees on all three engines, so
+`zyq consensus` has nothing to see. Only a golden of the analyser's output
+(`zyq expect --via check`) on a program that crosses a visible variable with a
+loop iterator could show it, and GLB-056 added that crossing for a constant
+only.
+
+**Status — OPEN.** Whether the analyser should assign the visible name (as the
+`##Kind(m) =>` binding of GAP-GOL-016 already does), and whether the loop should
+then also report a type change, is the author's decision.
 
 ---
 
@@ -973,7 +1040,7 @@ The 44 split into two kinds, and only one of them has a result to return:
 | kind | suites | what changed |
 |---|---|---|
 | self-asserting, with a failure counter | 22 — 囲碁 8, चतुरङ्गम् 6, Serpiente 2, Hov veS 1, ZyBank 5 | the failure branch ends with `<~ 1` |
-| print values, judged by a golden | 22 — Zofía 12, ZyAudit 8, 囲碁's `性能試験` and `自戦試験` | nothing: they count nothing, so there is nothing to return. Making them self-asserting is separate work |
+| print values, judged by a golden | 22 — Zofía 12, ZyAudit 8, 囲碁's `性能試験` and `自戦試験` | nothing: they count nothing, so there is nothing to return. Making them self-asserting is separate work — **residual, not tracked by ID** |
 
 The goldens did not move (a passing run prints what it printed). Checked the
 other way too: forcing one failure into `文字試験.zy` exits 1, restored it
