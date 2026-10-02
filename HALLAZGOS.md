@@ -42,7 +42,7 @@
 | [BUG-GOL-014](#bug-gol-014) | BUG | `zymbol.js` (`<\ … \>`) | in the browser, an unrecognised shell command returns a random nine-digit number instead of failing | **zyjs only** | **FIXED** 2026-09-29 |
 | [BUG-GOL-015](#bug-gol-015) | BUG | `#?` count | the tree-walker counted a String's `#?` in bytes, and both Rust engines an error's message | **zytw** strings; **zytw, zyvm** errors | **FIXED** 2026-09-29 |
 | [GAP-GOL-016](#gap-gol-016) | GAP | language | an error value's message cannot be read back without taking its display apart | all three | **FIXED** 2026-09-29 — `##Kind(m) =>` |
-| [ERROR-GOL-017](#error-gol-017) | ERROR | `zymbol-semantic` | a loop iterator over a visible name is analysed as a new variable: the outer one is reported unused | **zytw, zyvm** (zyjs silent) | **OPEN** |
+| [ERROR-GOL-017](#error-gol-017) | ERROR | `zymbol-semantic` | a loop iterator over a visible name is analysed as a new variable: the outer one is reported unused | **zytw, zyvm**; all three when the read is in the body | **FIXED** 2026-10-01 |
 
 Every reproduction below is a complete program. Run it as written. The tables
 of engine answers record what was measured **when the finding was filed**; a
@@ -777,7 +777,7 @@ Found on the way, and not this finding's: `@ m:[1, 2]` after `m = "fuera"`
 warns `unused variable 'm'` although the program reads `m` afterwards — the
 analyser declares a new `m` for the loop where the engines assign the visible
 one. The pattern binding avoided it by assigning a visible name instead of
-declaring it; the loop still has it. Filed as ERROR-GOL-017.
+declaring it; the loop had it until ERROR-GOL-017 fixed it on 2026-10-01.
 
 ---
 
@@ -840,8 +840,10 @@ so is every name of an iterator pattern. The only exception is a constant —
 GLB-056 found that declaring the iterator retired a constant and reported it
 unused while the program read it, and skipped it. That fixed one case of the
 same fault. A visible variable is the general case and still goes through
-`declare_variable`. `zyjs` appears to model the loop as an assignment, which
-would explain why it is the engine that does not warn.
+`declare_variable`. `zyjs` does the same thing — it defines the iterator in the
+loop's own frame — and escapes the warning only when the read comes after the
+loop, because that read resolves to the outer record. With the read inside the
+body it warns like the other two, and it misses the type change as they do.
 
 **Why no suite caught it.** What runs agrees on all three engines, so
 `zyq consensus` has nothing to see. Only a golden of the analyser's output
@@ -849,9 +851,53 @@ would explain why it is the engine that does not warn.
 loop iterator could show it, and GLB-056 added that crossing for a constant
 only.
 
-**Status — OPEN.** Whether the analyser should assign the visible name (as the
-`##Kind(m) =>` binding of GAP-GOL-016 already does), and whether the loop should
-then also report a type change, is the author's decision.
+**Resolution — FIXED, 2026-10-01 (author's decision: option A).** The iterator
+binds the way `m = …` binds a visible name, in both analysers: a name in view
+is assigned, any other is declared inside the loop, and a constant is refused as
+before (GLB-056).
+
+- `zymbol-semantic`: `variable_analysis.rs` gains `bind_iterator`, used by the
+  iterator and by every name of an iterator pattern. `type_check.rs` moves the
+  reassignment check of `m = …` into `warn_type_change` and asks it for the
+  iterator too, so `@ m:[1, 2]` after `m = "fuera"` warns `type mismatch: 'm'
+  was String but assigned Int`, with the same words and at the loop's line.
+- `zyjs`: `assignIterator` updates the visible record instead of defining a
+  second one, and warns the type change with the Rust words; the element type is
+  inferred as `type_check.rs` infers it (`iteratorElemType`). An iterator
+  pattern needed nothing: the parser turns it into a destructuring inside the
+  body, which already assigns.
+
+Measured on 2026-10-01 with the binary before the change (built from the same
+commit in a separate worktree) and after it, on all three engines; no engine
+warned a type change in any of these before:
+
+| Form | before | now |
+|---|---|---|
+| `@ m:1..3` after `m = 0`, `m` read after | `unused variable` (zytw, zyvm) | nothing |
+| `@ n:[5, 6]` after `n = 0`, `n` read in the body only | `unused variable` (all three) | nothing |
+| `@ (k, v):…` after `k = 0`, `k` read after | `unused variable` (zytw, zyvm) | nothing |
+| `@ m:[1, 2]` after `m = "fuera"`, `m` read after | `unused variable` (zytw, zyvm) | `type mismatch … String … Int` (all three) |
+| `@ t:"ab"` after `t = 1`, `t` read after | `unused variable` (zytw, zyvm) | `type mismatch … Int … Char` (all three) |
+| `@ r:1..2` after `r = "x"`, `r` read after | `unused variable` (zytw, zyvm) | `type mismatch … String … Int` (all three) |
+
+What runs did not change. Held by
+`corpus/errors/semantic/iterador_asigna_el_visible.zy` (its `check` golden is
+empty) and `iterador_cambia_el_tipo.zy` (its golden is the three warnings), and
+by two ZyDDT cells under MEM-7 in `isolation`:
+`loop-iterator-assigns-a-visible-name` (`expect = "ok"`) and
+`loop-iterator-changes-the-type` (`expect = "warn"`).
+
+**In view, not merely known — found by the gate.** The first version asked
+whether the name had been declared anywhere earlier, the question `m = …` and
+`##Kind(m) =>` ask of the analyser's table, which is flat and never forgets a
+name. `zyq suite` went red on the ZyDDT pin `GLB-003_aviso_por_sitio.zy`: two
+sibling loops over `i`, neither iterator read, must give one warning per site,
+and the second loop now *assigned* the first loop's `i` — which no longer
+exists — so the Rust engines gave one warning, `variable 'i' is assigned but
+never read`, where `zyjs` gave two. `bind_iterator` asks the analyser's scope
+chain instead (`current_scope_vars`), which is what the type checker and `zyjs`
+already ask; the pin is back to two warnings in all three. The `##Kind(m) =>`
+arms keep their own question: changing it is not this finding's.
 
 ---
 
