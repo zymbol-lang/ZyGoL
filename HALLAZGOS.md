@@ -37,7 +37,7 @@
 | [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | **FIXED** 2026-09-30 — `zymbol run --keys` |
 | [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | **FIXED** 2026-09-30 — `</ app.zy args… />` |
 | [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | **FIXED** 2026-09-30 — soft `##IO` |
-| [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | **DONE** for the 22 that count failures |
+| [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | **DONE** — 22 return their failures, 22 are judged by their golden |
 | [BUG-GOL-013](#bug-gol-013) | BUG | nav-path ranges | a negative index in a nav-path range raises in `zytw` and returns `[]` in silence under `zyvm`/`zyjs` | **all three disagree** | **FIXED** by GLB-012 |
 | [BUG-GOL-014](#bug-gol-014) | BUG | `zymbol.js` (`<\ … \>`) | in the browser, an unrecognised shell command returns a random nine-digit number instead of failing | **zyjs only** | **FIXED** 2026-09-29 |
 | [BUG-GOL-015](#bug-gol-015) | BUG | `#?` count | the tree-walker counted a String's `#?` in bytes, and both Rust engines an error's message | **zytw** strings; **zytw, zyvm** errors | **FIXED** 2026-09-29 |
@@ -1101,7 +1101,7 @@ The 44 split into two kinds, and only one of them has a result to return:
 | kind | suites | what changed |
 |---|---|---|
 | self-asserting, with a failure counter | 22 — 囲碁 8, चतुरङ्गम् 6, Serpiente 2, Hov veS 1, ZyBank 5 | the failure branch ends with `<~ 1` |
-| print values, judged by a golden | 22 — Zofía 12, ZyAudit 8, 囲碁's `性能試験` and `自戦試験` | nothing: they count nothing, so there is nothing to return. Making them self-asserting is separate work — **residual, not tracked by ID** |
+| print values, judged by a golden | 22 — Zofía 12, ZyAudit 8, 囲碁's `性能試験` and `自戦試験` | nothing: they count nothing, so there is nothing to return — **closed 2026-10-01: the golden is their verdict** |
 
 The goldens did not move (a passing run prints what it printed). Checked the
 other way too: forcing one failure into `文字試験.zy` exits 1, restored it
@@ -1110,6 +1110,22 @@ Serpiente, `Hoch.sh` (grep for `FAIL`/`FALLA`) and ZyBank's `todas.sh` (grep for
 `TODO BIEN`) — now read the exit status; `全試験.sh` also gained `棋譜試験`, a
 self-asserting suite it had never run. चतुरङ्गम्'s runner already compared
 goldens and was left alone.
+
+**The other 22 — closed, 2026-10-01 (author's decision).** They stay as they
+are, because their verdict is already the one the gate gives. Checked before
+closing, since a golden is only a verdict if it records a result:
+
+- every one of the 22 has a golden, and the gate compares it — Zofía 12 of 12,
+  ZyAudit 8 of 8, and 囲碁's two among its suites, all matching on 2026-10-01;
+- no golden records a failure: none contains `error`, `not found`, `##IO`,
+  `undefined` or a panic — the trap GAP-GOL-011 found in six of ZyAudit's — and
+  what they hold are values: matrices, flags such as `convergido: #1`, the
+  audited file's metrics (`总行: 60`), 囲碁's chain and liberty counts;
+- none prints a time, so each matches on every run, and a truncated run does not
+  match one (`zyquality/project/run.sh`).
+
+Making them self-asserting would copy into each suite, by hand, the values its
+golden already holds.
 
 ---
 
