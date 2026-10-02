@@ -26,7 +26,7 @@
 
 | ID | Type | Module | What | Engines | Status |
 |----|------|--------|------|---------|--------|
-| [BUG-GOL-001](#bug-gol-001) | BUG | `zymbol-compiler` | a name bound by destructuring is invisible inside a named function | **zyvm only** (zytw, zyjs correct) | **SUPERSEDED** by MEM-2 |
+| [BUG-GOL-001](#bug-gol-001) | BUG | language (MEM-2) | a function reading a file variable bound by destructuring, filed as a VM defect | filed: zyvm the odd one out; MEM-2 refuses it in all three | **REJECTED** — not a bug: the program breaks MEM-2 |
 | [BUG-GOL-002](#bug-gol-002) | BUG | `zymbol.js` (analyzer + runtime) | a file-level `_name()` function cannot be called from inside any block | **zyjs only** (zytw, zyvm correct) | **FIXED** 2026-09-29 |
 | [GAP-GOL-003](#gap-gol-003) | GAP | language | a program cannot construct an error value | all three | **FIXED** 2026-09-29 — `##Kind("…")` |
 | [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060; the rest **REJECTED** |
@@ -54,8 +54,17 @@ resolved entry says at its foot what the engines answer now.
 
 ### BUG-GOL-001
 
-**A name bound by a destructuring pattern at file level is invisible inside a
-named function body — under the register VM only.**
+> **REJECTED — not a bug (reclassified by the author, 2026-10-01).** The
+> program below reads a file variable from inside a named function, and
+> `PREMISES.md` MEM-2 forbids exactly that: a function is a self-contained
+> space, and a value crosses into it only as a parameter. Refusing it is the
+> correct answer, and all three engines refuse it before running. What was
+> filed as a defect of the register VM was a request for the language to
+> accept a program its design rejects. The entry is kept as it was filed,
+> because how it came to be filed is the lesson.
+
+**As filed: a name bound by a destructuring pattern at file level is invisible
+inside a named function body — under the register VM only.**
 
 ```zymbol
 (a, H) = ("x", [1, 2, 3])
@@ -63,11 +72,11 @@ g() { <~ H$# }
 >> g() ¶
 ```
 
-| Engine | Result |
-|--------|--------|
-| `zytw` | `3` |
-| `zyjs` | `3` |
-| `zyvm` | `Runtime error: 'H' is undefined — did you mean 'H°' (hot definition)?` |
+| Engine | When filed | What MEM-2 requires |
+|--------|------------|---------------------|
+| `zytw` | `3` | refused before running |
+| `zyjs` | `3` | refused before running |
+| `zyvm` | `Runtime error: 'H' is undefined — did you mean 'H°' (hot definition)?` | refused before running |
 
 **Scope, established by probe:**
 
@@ -107,15 +116,18 @@ and every one of them binds with `base = 10`. Destructuring has its own corpus
 files (`collections/32_destructure_extended.zy`, `35_rest_pattern.zy`). Neither
 crosses the other, and the defect lives only in the crossing.
 
-**Why it matters more than it looks.** The tuple return is how this language
-gets several values out of a function, and destructuring is how they are
-received — so this fires on the *idiomatic* form. It cost this project two
-rewrites before it was identified, and the register VM is the engine slated to
-become the default.
+**What the filing got wrong.** It took the two engines that answered `3` as
+the correct behaviour and the VM as the odd one out, and argued that the form
+was idiomatic, since a tuple return is received by destructuring. Both readings
+came from the engines, not from the design. The engines let a function see the
+file because `LLM.md` rule 5 described that behaviour as a rule — the first of
+the moves `zymbol-design/HOW_TO_CHANGE_ZYMBOL.md` § 2 names: *document the
+behaviour as if it were the design*. Measured against MEM-2, all three engines
+were wrong when this was filed: two ran a program that must not run, and the VM
+refused it for the wrong reason. The form the language has for this is the
+parameter, `g(H)`.
 
-**Resolution — SUPERSEDED by MEM-2 (verified 2026-09-29).** The function-capture
-rule this finding lived under was reversed: `PREMISES.md` MEM-2 makes a named
-function a self-contained space, and since 2026-09-13 all three engines refuse
+**Resolution — REJECTED, 2026-10-01.** Since 2026-09-13 all three engines refuse
 the read *before running*, with the same message whatever created the name:
 
 ```
@@ -123,18 +135,21 @@ error: 'H' is read from outside this function
   = help: a function is a self-contained space: a value crosses into it as a parameter, never by being in view — pass 'H' as one
 ```
 
-So the divergence cannot come back by this road, and the forms that remain
-legal — a lambda reading `H`, `V`, `R`, or `g(H, V)` passing them as parameters —
-agree in all three (`40`, `13`). The loop in `zymbol-compiler/src/lib.rs` still
-visits only `Statement::Assignment`; it is no longer reachable for a read,
-because the analyser stops the program first.
-
-What the finding taught is kept as a refusal of the crossing itself:
+The refusal is held by
 `zyquality/corpus/errors/semantic/funcion_lee_lo_desestructurado.zy` — tuple,
-array and rest patterns, each read from a function, each refused by all three.
-It is the sibling of `funcion_lee_el_archivo.zy`, which only ever bound with
-`x = …`, and that is the whole lesson: the rule held, and the file that tested it
-did not cross the one feature where it broke.
+array and rest patterns, each read from a function, each refused by all three —
+beside `funcion_lee_el_archivo.zy`, which only binds with `x = …`. The forms the
+language does allow — a lambda reading `H`, `V`, `R`, or `g(H, V)` passing them
+as parameters — agree in all three (`40`, `13`).
+
+The loop in `zymbol-compiler/src/lib.rs` still registers only
+`Statement::Assignment`, and stays that way. Measured on 2026-10-01, no program
+can reach the difference: a function is refused by MEM-2, a module body refuses
+destructuring (`E013`), and a lambda captures the value when it is created — 17
+combinations of destructuring, `x = …`, `\`, interpolation and lambdas give the
+same answer in all three engines. Registering those names would mean writing a
+global the destructuring path never writes, to serve a read the language
+forbids.
 
 ---
 
@@ -1110,9 +1125,11 @@ and nothing in it is written in another language. The findings above are what
 a domain the language had not been asked to serve produced *on the way*, before
 the program did anything interesting.
 
-Three of them (BUG-GOL-001, BUG-GOL-002, BUG-GOL-013) are engine divergences on
-ordinary code, each two engines against one, and none is reachable from the
-corpus because the corpus tests each feature alone. Three more (GAP-GOL-009 to
+Two of them (BUG-GOL-002, BUG-GOL-013) are engine divergences on ordinary
+code, each two engines against one, and neither was reachable from the corpus
+because the corpus tests each feature alone. A third, BUG-GOL-001, was filed as
+one and was not: the engines disagreed on a program the design forbids (MEM-2),
+and the answer was to refuse it, not to make the odd engine agree. Three more (GAP-GOL-009 to
 011) are the same incapacity seen from three sides: **the language cannot observe
 itself running** — it cannot drive an interactive program, cannot capture what
 its own code prints, and cannot read the exit status of anything it starts. That
