@@ -32,7 +32,7 @@
 | [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060; the rest **REJECTED** |
 | [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | **CLOSED** — documented 2026-09-29 |
 | [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | **FIXED** 2026-09-29 |
-| [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | **OPEN** — measured at 14 %, a cost cell guards it; next step a profiled run |
+| [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | **LOCATED** 2026-10-01 — dropping Values; the VM-wide half is ZYVM-010 |
 | [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | **DONE** — § 14 trap 3, checklist item 15 |
 | [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | **FIXED** 2026-09-30 — `zymbol run --keys` |
 | [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | **FIXED** 2026-09-30 — `</ app.zy args… />` |
@@ -989,8 +989,39 @@ instructions than the inline one, so most of the residue is not work but how it
 is laid out — the hot loop split across two chunks, the frame's footprint.
 Locating it needs a profiler. What stays is the cell,
 `call/function-in-hot-loop` (`time-ratio`, limit 1.30), so the call path cannot
-get dearer without the gate saying so. Kept OPEN as an idea: the next step is a
-profiled run, not a guess.
+get dearer without the gate saying so.
+
+**Profiled, 2026-10-01 — LOCATED.** With `perf` on a release build compiled
+apart with symbols and frame pointers, the clean pair at side 160 (256 000
+calls), five runs each, under 1 % spread:
+
+| | inline | with the call |
+|---|---:|---:|
+| time | 606 ms | 705 ms |
+| machine instructions | 5 136 M | 5 620 M |
+| cycles | 2 535 M | 2 920 M |
+| mispredicted branches | 5.4 M | 7.5 M |
+| time in `drop_glue<Value>` | ~11 % | ~17 % |
+
+Two corrections to what was written above. The residue **is** work: ~1 900
+machine instructions and ~1 500 cycles more per call — the 3.7 % was counted in
+bytecode instructions, which hide what each one costs. And it is mostly one
+thing: **dropping values**. The part that grows with the call is tearing down
+the callee's frame on return (`truncate`, 8 samples inline against 90 with the
+call), and that frame has 34 registers because the compiler never reuses a
+temporary (`alloc_temp` only advances).
+
+The larger half is not the call's. Inline, with no call at all, the VM spends
+~11 % of its time in `drop_glue<Value>`, nearly all of it from writing a
+register — the assignment drops the old value through an out-of-line function.
+That cost every VM program pays, so it was filed where VM costs are filed:
+**`ZYVM-010`** in `ZyDDT/HALLAZGOS/zyvm.md`, with both remedies (skip the drop
+for a value that owns nothing; reuse temporaries in the compiler) proposed and
+neither decided. The cost cell keeps guarding the call path, and its note now
+says what the profile found.
+
+Closed as an idea of this project's: what it asked — where the 14 % goes — has
+an answer, and what to do about it belongs to the VM's own log.
 
 ---
 
