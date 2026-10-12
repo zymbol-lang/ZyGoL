@@ -1,21 +1,24 @@
 # GoL — findings
 
 > **What this is.** The gap log for the Game of Life project, in the canonical
-> form `interpreter/LDV.md` § 5.2 asks for: one file named `HALLAZGOS.md`, four
+> form `zymbol-design/LDV.md` § 5.2 asks for: one file named `HALLAZGOS.md`, four
 > sections (`BUG` / `GAP` / `ERROR` / `IDEA`), a summary table, and identifiers
 > scoped by project from the first entry.
 >
-> **What this project is.** Not (yet) an LDV project. It was built as its own
-> measuring bench — the retro that opened it said a fifth terminal grid game
+> **What this project is.** An LDV project since **2026-09-29** — the ninth, and
+> the first to be *escalated* rather than started as one. It was built as its
+> own measuring bench: the retro that opened it said a fifth terminal grid game
 > would validate almost nothing, and `LDV.md` § 6 agrees in writing. The rule
-> agreed with the author: build it, measure it, and escalate to `LDV.md` **only
-> if the findings turn out to be worth it**. This file is the evidence for that
-> decision, not a claim that the decision was made.
+> agreed with the author was to escalate **only if the findings turned out to
+> be worth it**. They did, and not because of the grid — see the closing
+> section. From that date the suite is in the gate (`zyquality/project/apps.toml`,
+> id `gol`), indexed in `LDV.md` § 5.1, and part of ZyFmtCheck's body.
 >
-> **Status of every entry below: OPEN.** Nothing here has been fixed, and
-> nothing should be fixed on the strength of this document alone — the author
-> decides per finding whether to implement, defer or reject it (that is the
-> standing rule in this workspace, and `LDV.md` § 3 point 5 says the same).
+> **Status.** Each entry says its own, and a resolved one says how at its foot.
+> Nothing is closed on the strength of this document alone — the author decides
+> per finding whether to implement, defer or reject it (the standing rule in
+> this workspace, and `LDV.md` § 3 point 5 says the same). A GAP that asks a
+> design question stays OPEN until that question has an answer.
 
 ---
 
@@ -23,21 +26,27 @@
 
 | ID | Type | Module | What | Engines | Status |
 |----|------|--------|------|---------|--------|
-| [BUG-GOL-001](#bug-gol-001) | BUG | `zymbol-compiler` | a name bound by destructuring is invisible inside a named function | **zyvm only** (zytw, zyjs correct) | OPEN |
-| [BUG-GOL-002](#bug-gol-002) | BUG | `zymbol.js` (analyzer) | a file-level `_name()` function cannot be called from inside any block | **zyjs only** (zytw, zyvm correct) | OPEN |
-| [GAP-GOL-003](#gap-gol-003) | GAP | language | a program cannot construct an error value | all three | OPEN |
-| [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | OPEN |
-| [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | OPEN |
-| [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | OPEN |
-| [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | OPEN |
-| [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | OPEN |
-| [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | OPEN |
-| [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | OPEN |
-| [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | OPEN |
-| [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | OPEN |
-| [BUG-GOL-013](#bug-gol-013) | BUG | nav-path ranges | a negative index in a nav-path range raises in `zytw` and returns `[]` in silence under `zyvm`/`zyjs` | **all three disagree** | OPEN |
+| [BUG-GOL-001](#bug-gol-001) | BUG | language (MEM-2) | a function reading a file variable bound by destructuring, filed as a VM defect | filed: zyvm the odd one out; MEM-2 refuses it in all three | **REJECTED** — not a bug: the program breaks MEM-2 |
+| [BUG-GOL-002](#bug-gol-002) | BUG | `zymbol.js` (analyzer + runtime) | a file-level `_name()` function cannot be called from inside any block | **zyjs only** (zytw, zyvm correct) | **FIXED** 2026-09-29 |
+| [GAP-GOL-003](#gap-gol-003) | GAP | language | a program cannot construct an error value | all three | **FIXED** 2026-09-29 — `##Kind("…")` |
+| [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060; the rest **REJECTED** |
+| [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | **CLOSED** — documented 2026-09-29 |
+| [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | **FIXED** 2026-09-29 |
+| [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | **LOCATED** 2026-10-01 — dropping Values; the VM-wide half is ZYVM-010 |
+| [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | **DONE** — § 14 trap 3, checklist item 15 |
+| [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | **FIXED** 2026-09-30 — `zymbol run --keys` |
+| [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | **FIXED** 2026-09-30 — `</ app.zy args… />` |
+| [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | **FIXED** 2026-09-30 — soft `##IO` |
+| [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | **DONE** — 22 return their failures, 22 are judged by their golden |
+| [BUG-GOL-013](#bug-gol-013) | BUG | nav-path ranges | a negative index in a nav-path range raises in `zytw` and returns `[]` in silence under `zyvm`/`zyjs` | **all three disagree** | **FIXED** by GLB-012 |
+| [BUG-GOL-014](#bug-gol-014) | BUG | `zymbol.js` (`<\ … \>`) | in the browser, an unrecognised shell command returns a random nine-digit number instead of failing | **zyjs only** | **FIXED** 2026-09-29 |
+| [BUG-GOL-015](#bug-gol-015) | BUG | `#?` count | the tree-walker counted a String's `#?` in bytes, and both Rust engines an error's message | **zytw** strings; **zytw, zyvm** errors | **FIXED** 2026-09-29 |
+| [GAP-GOL-016](#gap-gol-016) | GAP | language | an error value's message cannot be read back without taking its display apart | all three | **FIXED** 2026-09-29 — `##Kind(m) =>` |
+| [ERROR-GOL-017](#error-gol-017) | ERROR | `zymbol-semantic` | a loop iterator over a visible name is analysed as a new variable: the outer one is reported unused | **zytw, zyvm**; all three when the read is in the body | **FIXED** 2026-10-01 |
 
-Every reproduction below is a complete program. Run it as written.
+Every reproduction below is a complete program. Run it as written. The tables
+of engine answers record what was measured **when the finding was filed**; a
+resolved entry says at its foot what the engines answer now.
 
 ---
 
@@ -45,8 +54,17 @@ Every reproduction below is a complete program. Run it as written.
 
 ### BUG-GOL-001
 
-**A name bound by a destructuring pattern at file level is invisible inside a
-named function body — under the register VM only.**
+> **REJECTED — not a bug (reclassified by the author, 2026-10-01).** The
+> program below reads a file variable from inside a named function, and
+> `PREMISES.md` MEM-2 forbids exactly that: a function is a self-contained
+> space, and a value crosses into it only as a parameter. Refusing it is the
+> correct answer, and all three engines refuse it before running. What was
+> filed as a defect of the register VM was a request for the language to
+> accept a program its design rejects. The entry is kept as it was filed,
+> because how it came to be filed is the lesson.
+
+**As filed: a name bound by a destructuring pattern at file level is invisible
+inside a named function body — under the register VM only.**
 
 ```zymbol
 (a, H) = ("x", [1, 2, 3])
@@ -54,11 +72,11 @@ g() { <~ H$# }
 >> g() ¶
 ```
 
-| Engine | Result |
-|--------|--------|
-| `zytw` | `3` |
-| `zyjs` | `3` |
-| `zyvm` | `Runtime error: 'H' is undefined — did you mean 'H°' (hot definition)?` |
+| Engine | When filed | What MEM-2 requires |
+|--------|------------|---------------------|
+| `zytw` | `3` | refused before running |
+| `zyjs` | `3` | refused before running |
+| `zyvm` | `Runtime error: 'H' is undefined — did you mean 'H°' (hot definition)?` | refused before running |
 
 **Scope, established by probe:**
 
@@ -98,11 +116,40 @@ and every one of them binds with `base = 10`. Destructuring has its own corpus
 files (`collections/32_destructure_extended.zy`, `35_rest_pattern.zy`). Neither
 crosses the other, and the defect lives only in the crossing.
 
-**Why it matters more than it looks.** The tuple return is how this language
-gets several values out of a function, and destructuring is how they are
-received — so this fires on the *idiomatic* form. It cost this project two
-rewrites before it was identified, and the register VM is the engine slated to
-become the default.
+**What the filing got wrong.** It took the two engines that answered `3` as
+the correct behaviour and the VM as the odd one out, and argued that the form
+was idiomatic, since a tuple return is received by destructuring. Both readings
+came from the engines, not from the design. The engines let a function see the
+file because `LLM.md` rule 5 described that behaviour as a rule — the first of
+the moves `zymbol-design/HOW_TO_CHANGE_ZYMBOL.md` § 2 names: *document the
+behaviour as if it were the design*. Measured against MEM-2, all three engines
+were wrong when this was filed: two ran a program that must not run, and the VM
+refused it for the wrong reason. The form the language has for this is the
+parameter, `g(H)`.
+
+**Resolution — REJECTED, 2026-10-01.** Since 2026-09-13 all three engines refuse
+the read *before running*, with the same message whatever created the name:
+
+```
+error: 'H' is read from outside this function
+  = help: a function is a self-contained space: a value crosses into it as a parameter, never by being in view — pass 'H' as one
+```
+
+The refusal is held by
+`zyquality/corpus/errors/semantic/funcion_lee_lo_desestructurado.zy` — tuple,
+array and rest patterns, each read from a function, each refused by all three —
+beside `funcion_lee_el_archivo.zy`, which only binds with `x = …`. The forms the
+language does allow — a lambda reading `H`, `V`, `R`, or `g(H, V)` passing them
+as parameters — agree in all three (`40`, `13`).
+
+The loop in `zymbol-compiler/src/lib.rs` still registers only
+`Statement::Assignment`, and stays that way. Measured on 2026-10-01, no program
+can reach the difference: a function is refused by MEM-2, a module body refuses
+destructuring (`E013`), and a lambda captures the value when it is created — 17
+combinations of destructuring, `x = …`, `\`, interpolation and lambdas give the
+same answer in all three engines. Registering those names would mean writing a
+global the destructuring path never writes, to serve a read the language
+forbids.
 
 ---
 
@@ -148,6 +195,21 @@ the documented wording.
 and that is the convention this workspace uses everywhere else. It was found by
 running this project's own test suite through `web/tests/run_one.mjs`; the
 suite had to rename four functions to get a three-engine comparison at all.
+
+**Resolution — FIXED in `zyjs`, 2026-09-29.** The rule was applied twice, and
+both places had to change: the analyser's `lookup` in `web/src/zymbol/zymbol.js`
+refused the name before anything ran, and `Env.get` refused it again at run time
+once the analyser let it through. Both now skip a name bound to a function
+declaration; both still refuse a variable. Measured after the change:
+
+| | `zytw` | `zyvm` | `zyjs` |
+|---|---|---|---|
+| `_f()` from a loop, an `if`, a nested loop, a function | runs | runs | runs |
+| `_v = 5` read from `@ 1 { }` | refused | refused | refused |
+| `_K := 7` read from `@ 1 { }` | refused | refused | refused |
+
+Held by `zyquality/corpus/functions/funcion_guion_bajo_en_bloque.zy`, which
+agrees on all three engines.
 
 ---
 
@@ -196,6 +258,109 @@ them are documented:
 | `s$[1..2]` | `Ab` | **String** |
 | `s[1..2]` | `[A, b]` | **Array** — undocumented |
 
+**Resolution — FIXED by ZyDDT `GLB-012` (decided 2026-09-15, built 2026-09-22).**
+The author decided both halves in D1 and D3: a start or end that is not a
+positive position in a nav-path range is an **error** of family `##Index`, and an
+inverted range selects in descending order. All three engines now raise on
+`a[2..-2]`, `a[-2..-1]` and `"Abcde"[-2..-1]` with the tree-walker's message, and
+the slice `a$[2..-2]` keeps answering `[20, 30, 40]`. Held by the ZyDDT cell
+`runtime-index-nav/range-indices-in-nav-path-must-be` (`expect = "error"`).
+What this log added was the silent `[]` in two engines, which is gone.
+
+---
+
+### BUG-GOL-014
+
+**In the browser engine, a shell command it does not recognise returns a random
+nine-digit number — in silence, as if the command had printed it.**
+
+Found on 2026-09-29, re-measuring GAP-GOL-011 on three engines:
+
+```zymbol
+b = <\ "exit 3" \>
+>> "«" b "»" ¶
+```
+
+| Engine | Result |
+|--------|--------|
+| `zytw` | `«»` |
+| `zyvm` | `«»` |
+| `zyjs` | `«691156425»` — a different number on every run |
+
+**Cause.** The browser has no shell, and `web/src/zymbol/zymbol.js`, `case
+'BashExec'`, is a set of stand-ins: `date +%Y` and friends answer from the
+clock, `echo literal` answers with its text, and the entropy commands a seed is
+built from (`date +%N`, `echo $$`, `/dev/urandom`) answer with a number of the
+same order of magnitude — a deliberate and documented choice, since v0.0.9's
+integer is fail-closed and a seed is multiplied on the next line. The last line
+generalises it:
+
+```js
+// Anything else: entropy in the same nine-digit range …
+return mkStr(String(_rand(1e9)));
+```
+
+So *every* other command is treated as a request for entropy. The corpus and
+the example pool use `<\ \>` with `whoami`, `pwd`, `ls`, `cat file`, `test -f …
+&& echo si || echo no` and eight `sqlite3 … 'SELECT …'` — each of which, in the
+playground, returns a random number that the program then prints or parses as
+if it were the answer.
+
+**Why it is a BUG and not an environment exclusion.** An exclusion says *this
+engine cannot run this*. This engine runs it and answers wrongly, and `LDV.md`
+§ 2 names the silent wrong answer as red on the same footing as the incapacity.
+The sibling construct already does the right thing: `</ file.zy />` in the same
+function throws *"a subscript runs another file as a process, and the browser
+has none"*.
+
+**Resolution — FIXED, 2026-09-29 (author's decision D1).** Refuse any command
+with no stand-in, keep the stand-ins by name. `case 'BashExec'` now answers:
+
+| command | answer |
+|---|---|
+| `date +FORMAT` with `%Y %m %d %H %M %S %s %F %T %N %6N %%` | the whole format, from the clock — it used to answer `date +%Y-%m-%d` with the year alone |
+| `date +%N`, `echo $$`, `od -An -N2 -tu2 /dev/urandom [\| tr -d …]` | entropy of the same range as the command, which the games seed from |
+| `echo` of literal words, with nothing the shell would read as syntax | the words — `echo x \| bc` used to answer with the text of the pipeline |
+| anything else, including a command built from variables | `cannot run 'exit 3': a shell command runs as a process, and the browser has none` |
+
+The sweep before changing it: the four published games seed only from `date
++%N`, `echo $$` and `od … /dev/urandom | tr -d ' \n'`, all kept. GO's `printenv`,
+`ps` and `date +%s%6N` are in `棋戦.zy`, which is not in the package. One corpus
+file, `bugs/bug03_bashexec_void_statement.zy`, had agreed only because the
+browser pretended to run `true`, `mkdir` and `rmdir`; it now carries the
+`BASH_EXEC` exclusion every other shell file carries, with that history as its
+reason. Held by `web/tests/test_shell.mjs` (16 checks, in CI): against the old
+engine 11 of them fail.
+
+---
+
+### BUG-GOL-015
+
+**`#?` counted in bytes where the language counts code points.**
+
+Found by comparing the three engines on the error constructor (GAP-GOL-003):
+
+```zymbol
+s = "vacía"
+>> s#? ¶
+e = ##Parse("vacía")
+>> e#? ¶
+```
+
+| | `zytw` | `zyvm` | `zyjs` |
+|---|---|---|---|
+| `s#?` | `(##", 6, vacía)` | `(##", 5, vacía)` | `(##", 5, vacía)` |
+| `e#?` | `(##Parse, 6, …)` | `(##Parse, 6, …)` | `(##Parse, 5, …)` |
+
+`$#` gives 5 in all three. So the tree-walker's `#?` on a String disagreed with
+the other two engines, and both Rust engines counted an error's message in
+bytes. Nobody saw either: no corpus file asked `#?` of a non-ASCII string, and
+every error message the standard library produces is ASCII.
+
+**Resolution — FIXED, 2026-09-29.** Code points in both places, both Rust
+engines (`data_ops.rs`, and `error_message_len` in the VM). Held by
+`corpus/strings/tipo_cuenta_puntos_de_codigo.zy` — Spanish, Greek and Chinese.
+
 ---
 
 ## GAP
@@ -236,6 +401,25 @@ leaving the language, the language did not support it."* The concept here is
 "this data is malformed, and the caller decides what to do", and the language
 expresses it for its own standard library and not for a program written in it.
 
+**Resolution — FIXED, 2026-09-29 (author's decision D3).** `##Kind("message")`
+in an expression builds the error, in all three engines: the spelling an error
+prints as, and the kind a `:!` matches. It is a value — `$!` is `#1`, `$!!`
+propagates it, no `:!` sees it — the kind is any name in any script, and the
+message is a String (refused before running when the analyser knows it is not,
+`##Type` at run time otherwise). Written together, like every operator since
+GLB-031. Held by `corpus/errors/catchable/construir_error.zy`,
+`mensaje_de_error_en_ejecucion.zy`, `errors/semantic/mensaje_de_error_no_es_texto.zy`,
+two forms in `reject/errors/`, five ZyDDT cells in `error-flow`, and GUIDE § 16.
+
+Applying it here, which is what LDV asks before a finding closes, **did not
+work at first**: this program's two functions return a catalogue key, and a
+caller could not read the key back out of the error — GAP-GOL-016. With that
+closed the same day, `κ::κανόνας` returns `(γεννήσεις, επιβιώσεις)` or
+`##Κανόνας(κλειδί)`, `σ::πάρε` the cells or `##Σχήμα(κλειδί)`, and the tuples
+with an empty-string slot for "no error" are gone from all seven callers. The
+suite's golden did not move, and the command line's errors read the same in all
+four locales on all three engines.
+
 ---
 
 ### GAP-GOL-004
@@ -273,6 +457,16 @@ speed.
 (`1..γραμμές` can be `1..0`, which counts down). Only the literal case is
 wrong, and only the absence of any suppression makes the rest expensive.
 
+**Resolution — FIXED by ZyDDT `GLB-060` (2026-09-25).** Found again,
+independently, by the author in `zyV.zy`: the warning now stays quiet when both
+bounds are integer literals — `-1` included — or constants, in all three engines,
+and still fires when either bound is computed. `@ i:-1..1 { }` prints no warning.
+The second half — a way to silence the warning on a *dynamic* bound the
+program has already guarded — is **REJECTED** (author's decision D6,
+2026-09-29). The descending range was kept *with* its warning by an earlier
+decision of the author's; a switch that silences it would undo that decision
+one call site at a time.
+
 ---
 
 ### GAP-GOL-005
@@ -296,6 +490,18 @@ someone finds it.
 behaviour. The gap is that nothing says so where a user would look, and that a
 packaged `.zyp` run as `zymbol run app.zyp --help` has the same problem with
 no obvious place to put the `--`.
+
+**Resolution — DOCUMENTED, 2026-09-29.** Measured before writing it: the
+interception is narrower than the title says. `run`'s own options (`--vm`,
+`--tw`, `--script`, `--keep-temp`, `-h`/`--help`) are recognised after the file
+name only **until the first argument that is not one of them** — `zymbol run
+x.zy a --help` hands the program `["a", "--help"]`, and `--version` always
+reaches it. A bare `--` ends them, and it works for a `.zyp` as well
+(`zymbol run app.zyp -- --help`). `GUIDE.md` § 3 "CLI Arguments" now says so with
+five examples. Changing the rule itself — every argument after the file goes to
+the program — would make `zymbol run x.zy --vm` stop meaning the VM. The author
+kept the rule and closed the finding with the documentation (decision D6,
+2026-09-29).
 
 ---
 
@@ -323,6 +529,13 @@ and deleting it — which works, and is not a thing a harness should require of
 every caller.
 
 A `--args a b c` passthrough would close it; the engine side already exists.
+
+**Resolution — FIXED, 2026-09-29.** `node tests/run_one.mjs FILE.zy [--input FILE]
+[-- ARG...]`: everything after a bare `--` is the program's command line, spelled
+the way `zymbol run FILE.zy -- ARG...` spells it, so one argument vector reaches
+all three engines. Measured on this program:
+`ζωή.zy -- -p glider -r 10 -c 10 -b -n 3 --print -L hi` gives byte-identical
+output under `zytw`, `zyvm` and `zyjs`.
 
 ---
 
@@ -361,6 +574,32 @@ screen. **None of them tests it.**
 is a design question and not this log's to answer. What is recorded here is the
 incapacity and what it costs.)*
 
+**Resolution — FIXED, 2026-09-30 (author's decisions D5 and D11).** A headless
+mode in the CLI, asked for and never guessed: `zymbol run app.zy --keys app.keys`
+draws `>>|` on a virtual 24×80 screen, feeds `<<|` and `<<|?` from the file, and
+writes each block's last frame to the output as text. Both Rust engines share one
+implementation (`zymbol_common::vscreen`), so a frame cannot mean two things.
+Without `--keys`, `>>|` with no terminal still fails — GLB-018 C stands.
+
+Two things were measured before building it, and both changed the plan:
+
+- **D5 had assumed the screen could be reached from a subscript.** It cannot: a
+  subscript receives the program's arguments (D10), never `zymbol run`'s options.
+  The in-process road was the one that worked — the suites already call
+  `εκκίνηση::ξεκίνα(lang, args)`, which enters `>>|` like the program does.
+- **"The last frame" was not enough.** Two of the sixteen cases check a picker
+  that is closed by the time the program ends. The key script gained `SHOW`,
+  which writes the frame of that moment; `WAIT n` makes a polling loop advance by
+  polls rather than by a clock, so no case depends on timing.
+
+`δοκιμές/οθόνη/` holds the sixteen cases of the old `οθόνη.py`, each a two-line
+program, a `.keys` file and a golden, graded on both Rust engines by the same
+gate as every other golden; `zyq` passes `--keys` when a `.keys` file sits beside
+the program. `οθόνη.py` is deleted, and with it the last file of GoL that was not
+Zymbol. `zyquality/tui/`'s pty driver stays: it tests the real terminal path —
+how crossterm decodes an arrow — which a virtual screen by design does not touch.
+Held by `corpus/output/pantalla_virtual.zy` with its key script.
+
 ---
 
 ### GAP-GOL-010
@@ -393,6 +632,31 @@ golden needs a runner outside the language to capture the output and compare it.
 That is the same dependency GAP-GOL-009 describes, arriving from the other
 direction: **the language cannot observe itself running.**
 
+**Resolution — FIXED, 2026-09-30 (author's decisions D4 and D10), by composition
+and without a new mark.** D4 asked for a measurement before any capture block
+was designed: could `</ … />`, now that it returns a status (GAP-GOL-011), test
+what a program says? It could not, for one reason — a subscript inherited its
+caller's arguments and could not be given its own; `</ ./x.zy uno />` was
+`file not found: ./x.zy uno`. D10 supplied that piece and nothing else: the words
+after the path are the subscript's command line, literal like the path, so
+`zymbol package` and AGT-3 still read the reachable program without running it.
+
+`δοκιμές/έξοδος.zy` is the suite this finding said could not be written. It runs
+`ζωή.zy` as a subscript, one literal command line per check, and asserts what it
+says against the program's own catalogue: the pattern list in all four
+languages, four malformed rules each refused in the right language with status
+2, an unknown pattern and an unknown option, and a batch run. 20 checks, both
+Rust engines, its own golden in the gate. It is a script of its own and not a
+module of `όλα.zy`, because the browser engine has no process to run a
+subscript in, and `όλα.zy` is the suite that agrees on all three.
+
+It caught one wrong expectation on its first run — `B/S23` is a valid rule, not
+an empty half — which is the other half of the point: a check that can fail.
+The in-process half of the finding — capturing what a function *in this
+process* prints — remains without a mechanism, and nothing here needed one.
+**Residual, not tracked by ID:** it becomes a finding of its own the day an
+application needs it, and not before.
+
 ---
 
 ### GAP-GOL-011
@@ -424,12 +688,231 @@ run something that is *not* Zymbol has no equivalent escape.
 operating system, and GUIDE.md § 3 documents it. So Zymbol can *report* an exit
 status and cannot *read* one.
 
+**Resolution — FIXED, 2026-09-30 (author's decisions D2 and D8).** A status
+other than 0 is a soft `##IO` error that carries it, in both Rust engines, and
+`##IO(m) =>` (GAP-GOL-016) reads it back:
+
+| | before | now |
+|---|---|---|
+| `<\ "exit 3" \>` | `""` | `##IO(exit 3)` |
+| `<\ "echo err >&2; exit 2" \>` | `"err"` | `##IO(exit 2: err)` — stderr, else stdout |
+| `</ sub.zy />` where sub gives `<~ 3` | its output, the 3 lost | `##IO(exit 3: <its output>)` |
+| `</ sub.zy />` where sub fails | raised | raised, unchanged (GLB-017 I) |
+
+The subscript half met an earlier decision: GLB-017 I (2026-09-26) raises a
+subscript that fails. D8 kept it — only a status the subscript *gives* becomes a
+value; a crash is not a status it gave. `<\ \>` turns every status other than 0
+into a value, because a shell cannot tell a failure from a crash.
+
+**What the change broke, measured before and after.** The corpus: nothing. Seven
+of eight applications: nothing. ZyAudit: six of eight suites — and not because
+of D2. Its suites read `源文件/计算器.zy` and `i18n.json` relative to where they
+run, and `zyq` runs every program in an empty scratch directory. So in the gate
+the auditor **had never audited anything**: six goldens recorded the shell's
+`sh: 1: cannot open 源文件/计算器.zy: No such file`, `函数=0` and blank labels as
+the result, and matched them every run. D2 turned that text into `##IO` errors,
+the goldens stopped matching, and the suite's long run of passing on a
+missing file became visible. Fixed by the author's decision D9: an application
+declares `fixtures` in `zyquality/project/apps.toml`, `zyq --fixture` copies them
+into each scratch directory, and the six goldens were re-recorded from a real
+run — `总计=60`, nine functions with their lines and arities, the report in
+three languages. The re-recording was reviewed line by line; nothing in the new
+goldens is a failure message.
+
+Four places depended on `""` for a failure that is part of their normal flow,
+and now test `$!`: ZyAudit's `printenv GEMINI_API_KEY`, its `grep … | grep -v`
+that finds no function, its `jq` lookup (whose documented fallback is the empty
+string), and 囲碁's `printenv ZYGO_KIFU` in `棋戦.zy`. Held by
+`corpus/errors/catchable/estado_de_salida.zy` (with two subscripts beside it) and
+two ZyDDT cells in `environment`.
+
+---
+
+### GAP-GOL-016
+
+**An error value's message cannot be read back — only printed.**
+
+Found applying GAP-GOL-003 to this program. `κ::κανόνας` and `σ::πάρε` return a
+catalogue key when the input is wrong (the core never writes text a person will
+read), and the caller translates it. With the constructor they would return
+`##Κανόνας("σφάλμα.κανόνας_κενό")` — and then the caller needs the key back:
+
+```zymbol
+κανόνας(κείμενο) {
+    ? κείμενο$# == 0 { <~ ##Κανόνας("σφάλμα.κανόνας_κενό") }
+    <~ κείμενο
+}
+r = κανόνας("")
+? r$! {
+    (είδος, _ν, _τ) = r#?
+    κείμενο = "" r
+    κλειδί = κείμενο$[είδος$# + 2..-2]
+    >> "κλειδί: " κλειδί ¶
+}
+```
+
+That runs, on all three engines, and it is the finding: the only way to the
+message is to turn the error into its display and cut the `##Κανόνας(` and `)`
+off by hand. The kind is readable — `#?` hands it over as text — and the message
+is not. Inside `:!` there is `_err`; a built error never reaches a `:!`, which
+is the point of it being a value.
+
+It reaches past this program. D2 (GAP-GOL-011) will return a failed command as
+`##IO(…)` carrying its exit status: the status will be in the message, where
+nothing can read it either.
+
+**Resolution — FIXED, 2026-09-29 (author's decision D7).** The spelling that
+builds an error takes it apart, as a pattern of `??`:
+
+```zymbol
+κανόνας = κ::κανόνας(όνομα_κανόνα)
+?? κανόνας {
+    ##Κανόνας(κλειδί) => { σφάλμα = κλειδί }
+    _                 => { (γέννηση, επιβίωση) = κανόνας }
+}
+```
+
+That is `εκκίνηση.zy` now. `##Kind(m)` matches an error of that kind and puts
+its message in `m`; `##Kind(_)` and `##Kind` match the kind alone, as `:!` does.
+Three rules came with it, each decided rather than left to the engines:
+
+- the binding is a **birth like `m = …`**: a visible `m` is assigned, never
+  shadowed — `PREMISES.md` MEM-7 settled that without a new decision, and the
+  first version, which shadowed, was wrong against it;
+- it **stands alone** in its arm: refused inside `||` (the name would not exist
+  when the other alternative matched) and inside a list pattern;
+- the message is **bound, never compared**: `##A("x") =>` is refused.
+
+It is the first pattern in the language that creates a name, so GUIDE § 7 now
+lists seven kinds and LLM.md no longer says there are no binding patterns.
+Held by `corpus/errors/catchable/leer_mensaje_de_error.zy`, three forms in
+`reject/errors/`, and two ZyDDT cells in `error-flow`.
+
+Found on the way, and not this finding's: `@ m:[1, 2]` after `m = "fuera"`
+warns `unused variable 'm'` although the program reads `m` afterwards — the
+analyser declares a new `m` for the loop where the engines assign the visible
+one. The pattern binding avoided it by assigning a visible name instead of
+declaring it; the loop had it until ERROR-GOL-017 fixed it on 2026-10-01.
+
 ---
 
 ## ERROR
 
-None. No diagnostic in this project was wrong about what it pointed at — the
-one false positive is a warning, and it is GAP-GOL-004.
+### ERROR-GOL-017
+
+**A loop iterator over a name that is already visible is analysed as a new
+variable. The engines assign the visible one, and the analyser reports it
+unused.**
+
+Found on 2026-09-29 while building GAP-GOL-016, filed on 2026-10-01:
+
+```zymbol
+m = "fuera"
+@ m:[1, 2] { >> m ¶ }
+>> m ¶
+```
+
+| Engine | Output | Diagnostic |
+|--------|--------|------------|
+| `zytw` | `1` `2` `2` | `warning: unused variable 'm'` at line 1 |
+| `zyvm` | `1` `2` `2` | `warning: unused variable 'm'` at line 1 |
+| `zyjs` | `1` `2` `2` | none |
+
+All three engines agree on what runs: the loop writes the `m` that is in view,
+and after it `m` is `2`. That is the rule — `PREMISES.md` MEM-7: *"A light
+environment introduces no exception: it has no namespace of its own, so a block
+cannot hold a second thing under a name its strong environment already uses."*
+The diagnostic disagrees with what runs. The program reads `m` on its last line,
+and the warning says it is never used.
+
+**It is not a dead-store warning that happens to be worded badly.** A plain
+overwrite gets no such warning in any engine:
+
+```zymbol
+m = "fuera"
+m = 5
+>> m ¶
+```
+
+All three answer `warning: type mismatch: 'm' was String but assigned Int`, and
+nothing about `unused`. The loop in the first program makes the same change, a
+String to an Int, and no engine says so. Both symptoms have one cause: the
+analyser sees two variables where the program has one.
+
+| Form | `zytw` / `zyvm` | `zyjs` |
+|---|---|---|
+| `@ m:[1, 2]` after `m = "fuera"`, `m` read after the loop | `unused variable 'm'` — **false** | none |
+| `@ m:1..2` after `m = 0`, `m` read after the loop | `unused variable 'm'` — **false** | none |
+| `@ (k, v):[(1, 2), (3, 4)]` after `k = "fuera"`, `k` read after | `unused variable 'k'` — **false** | none |
+| `m` read **before** the loop as well | none | none |
+| `m` never read after the loop | `unused variable 'm'` | `unused variable 'm'` |
+| `m = "fuera"` then `m = 5` | `type mismatch` | `type mismatch` |
+| `@ m:[1, 2]` after `m = "fuera"` (String → Int) | no `type mismatch` | no `type mismatch` |
+
+**Cause.** `crates/zymbol-semantic/src/variable_analysis.rs`, the
+`Statement::Loop` arm: the iterator is declared *inside* the loop's scope, and
+so is every name of an iterator pattern. The only exception is a constant —
+GLB-056 found that declaring the iterator retired a constant and reported it
+unused while the program read it, and skipped it. That fixed one case of the
+same fault. A visible variable is the general case and still goes through
+`declare_variable`. `zyjs` does the same thing — it defines the iterator in the
+loop's own frame — and escapes the warning only when the read comes after the
+loop, because that read resolves to the outer record. With the read inside the
+body it warns like the other two, and it misses the type change as they do.
+
+**Why no suite caught it.** What runs agrees on all three engines, so
+`zyq consensus` has nothing to see. Only a golden of the analyser's output
+(`zyq expect --via check`) on a program that crosses a visible variable with a
+loop iterator could show it, and GLB-056 added that crossing for a constant
+only.
+
+**Resolution — FIXED, 2026-10-01 (author's decision: option A).** The iterator
+binds the way `m = …` binds a visible name, in both analysers: a name in view
+is assigned, any other is declared inside the loop, and a constant is refused as
+before (GLB-056).
+
+- `zymbol-semantic`: `variable_analysis.rs` gains `bind_iterator`, used by the
+  iterator and by every name of an iterator pattern. `type_check.rs` moves the
+  reassignment check of `m = …` into `warn_type_change` and asks it for the
+  iterator too, so `@ m:[1, 2]` after `m = "fuera"` warns `type mismatch: 'm'
+  was String but assigned Int`, with the same words and at the loop's line.
+- `zyjs`: `assignIterator` updates the visible record instead of defining a
+  second one, and warns the type change with the Rust words; the element type is
+  inferred as `type_check.rs` infers it (`iteratorElemType`). An iterator
+  pattern needed nothing: the parser turns it into a destructuring inside the
+  body, which already assigns.
+
+Measured on 2026-10-01 with the binary before the change (built from the same
+commit in a separate worktree) and after it, on all three engines; no engine
+warned a type change in any of these before:
+
+| Form | before | now |
+|---|---|---|
+| `@ m:1..3` after `m = 0`, `m` read after | `unused variable` (zytw, zyvm) | nothing |
+| `@ n:[5, 6]` after `n = 0`, `n` read in the body only | `unused variable` (all three) | nothing |
+| `@ (k, v):…` after `k = 0`, `k` read after | `unused variable` (zytw, zyvm) | nothing |
+| `@ m:[1, 2]` after `m = "fuera"`, `m` read after | `unused variable` (zytw, zyvm) | `type mismatch … String … Int` (all three) |
+| `@ t:"ab"` after `t = 1`, `t` read after | `unused variable` (zytw, zyvm) | `type mismatch … Int … Char` (all three) |
+| `@ r:1..2` after `r = "x"`, `r` read after | `unused variable` (zytw, zyvm) | `type mismatch … String … Int` (all three) |
+
+What runs did not change. Held by
+`corpus/errors/semantic/iterador_asigna_el_visible.zy` (its `check` golden is
+empty) and `iterador_cambia_el_tipo.zy` (its golden is the three warnings), and
+by two ZyDDT cells under MEM-7 in `isolation`:
+`loop-iterator-assigns-a-visible-name` (`expect = "ok"`) and
+`loop-iterator-changes-the-type` (`expect = "warn"`).
+
+**In view, not merely known — found by the gate.** The first version asked
+whether the name had been declared anywhere earlier, the question `m = …` and
+`##Kind(m) =>` ask of the analyser's table, which is flat and never forgets a
+name. `zyq suite` went red on the ZyDDT pin `GLB-003_aviso_por_sitio.zy`: two
+sibling loops over `i`, neither iterator read, must give one warning per site,
+and the second loop now *assigned* the first loop's `i` — which no longer
+exists — so the Rust engines gave one warning, `variable 'i' is assigned but
+never read`, where `zyjs` gave two. `bind_iterator` asks the analyser's scope
+chain instead (`current_scope_vars`), which is what the type checker and `zyjs`
+already ask; the pin is back to two warnings in all three. The `##Kind(m) =>`
+arms keep their own question: changing it is not this finding's.
 
 ---
 
@@ -482,6 +965,64 @@ Three readings, and each is worth stating separately:
 optimisation target, and because the three numbers together are a better
 answer than "~4.4× on fib(35)" to the question of what `--vm` is worth.
 
+**Re-measured and held, 2026-09-30 (phase 4 of the plan).** The VM moved on
+since this was filed: the same bench gives A/B **1.22** today, and the run is
+twice as fast in absolute terms (618 → 279 ms at side 100). And the bench
+overstates the call — its variant A also takes the bounded-world branch and a
+sixth argument that B never pays. A clean pair, written for the purpose
+(`zyquality/cost/casos/llamada_por_celda.zy.in` against `en_linea.zy.in`:
+identical work, the count called or inline), measures **1.14 under the VM and
+0.87 under the tree-walker**, which is faster *with* the call.
+
+What the 14 % is made of, as far as it could be taken apart without a profiler
+(this machine has neither `perf` nor `valgrind`):
+
+| measured | share |
+|---|---|
+| the call machinery itself — the same control plus an empty five-argument call per cell | 2–5 % |
+| a 34-register frame prepared and dropped instead of a 5-register one | ~55 of ~280 ns per call |
+| the six auto-free `LoadUnit`s before the callee's `<~` (redundant: the return truncates the frame) | removed, **no measurable change**, put back |
+| everything else | not located |
+
+An instruction count says the call version executes only 3.7 % more
+instructions than the inline one, so most of the residue is not work but how it
+is laid out — the hot loop split across two chunks, the frame's footprint.
+Locating it needs a profiler. What stays is the cell,
+`call/function-in-hot-loop` (`time-ratio`, limit 1.30), so the call path cannot
+get dearer without the gate saying so.
+
+**Profiled, 2026-10-01 — LOCATED.** With `perf` on a release build compiled
+apart with symbols and frame pointers, the clean pair at side 160 (256 000
+calls), five runs each, under 1 % spread:
+
+| | inline | with the call |
+|---|---:|---:|
+| time | 606 ms | 705 ms |
+| machine instructions | 5 136 M | 5 620 M |
+| cycles | 2 535 M | 2 920 M |
+| mispredicted branches | 5.4 M | 7.5 M |
+| time in `drop_glue<Value>` | ~11 % | ~17 % |
+
+Two corrections to what was written above. The residue **is** work: ~1 900
+machine instructions and ~1 500 cycles more per call — the 3.7 % was counted in
+bytecode instructions, which hide what each one costs. And it is mostly one
+thing: **dropping values**. The part that grows with the call is tearing down
+the callee's frame on return (`truncate`, 8 samples inline against 90 with the
+call), and that frame has 34 registers because the compiler never reuses a
+temporary (`alloc_temp` only advances).
+
+The larger half is not the call's. Inline, with no call at all, the VM spends
+~11 % of its time in `drop_glue<Value>`, nearly all of it from writing a
+register — the assignment drops the old value through an out-of-line function.
+That cost every VM program pays, so it was filed where VM costs are filed:
+**`ZYVM-010`** in `ZyDDT/HALLAZGOS/zyvm.md`, with both remedies (skip the drop
+for a value that owns nothing; reuse temporaries in the compiler) proposed and
+neither decided. The cost cell keeps guarding the call path, and its note now
+says what the profile found.
+
+Closed as an idea of this project's: what it asked — where the 14 % goes — has
+an answer, and what to do about it belongs to the VM's own log.
+
 ---
 
 ### IDEA-GOL-008
@@ -523,6 +1064,14 @@ Worth a line in §14's trap list, and worth a row in the §12 audit checklist:
 *"no visible digit is written as a literal inside a translated string."* It is
 mechanically checkable — a locale file containing `0`–`9` between quotes is
 either this bug or a version number.
+
+**Resolution — DONE, 2026-09-29.** `USERAPPI18N.md` § 14 now has three traps
+(the third with the program above, checked on all three engines) and § 12 an
+item 15. The last sentence of this entry turned out to be wrong, and the
+document says so instead: a sweep of every application's locale files found 76
+candidates and three real cases — the rest were keys, syntax the user types in
+ASCII, and titles. Searchable, not decidable: a checklist item read by a person,
+not a gate.
 
 ### IDEA-GOL-012
 
@@ -577,20 +1126,57 @@ throws takes the runner down with it. That shape is only possible because each
 suite returns its failure count — which is the same fact this finding is about,
 applied at the function level instead of the process level.)*
 
+**Resolution — DONE for every suite that counts its own failures, 2026-09-29.**
+The 44 split into two kinds, and only one of them has a result to return:
+
+| kind | suites | what changed |
+|---|---|---|
+| self-asserting, with a failure counter | 22 — 囲碁 8, चतुरङ्गम् 6, Serpiente 2, Hov veS 1, ZyBank 5 | the failure branch ends with `<~ 1` |
+| print values, judged by a golden | 22 — Zofía 12, ZyAudit 8, 囲碁's `性能試験` and `自戦試験` | nothing: they count nothing, so there is nothing to return — **closed 2026-10-01: the golden is their verdict** |
+
+The goldens did not move (a passing run prints what it printed). Checked the
+other way too: forcing one failure into `文字試験.zy` exits 1, restored it
+exits 0. The four runners that decided by text — `全試験.sh`, `todas.sh` of
+Serpiente, `Hoch.sh` (grep for `FAIL`/`FALLA`) and ZyBank's `todas.sh` (grep for
+`TODO BIEN`) — now read the exit status; `全試験.sh` also gained `棋譜試験`, a
+self-asserting suite it had never run. चतुरङ्गम्'s runner already compared
+goldens and was left alone.
+
+**The other 22 — closed, 2026-10-01 (author's decision).** They stay as they
+are, because their verdict is already the one the gate gives. Checked before
+closing, since a golden is only a verdict if it records a result:
+
+- every one of the 22 has a golden, and the gate compares it — Zofía 12 of 12,
+  ZyAudit 8 of 8, and 囲碁's two among its suites, all matching on 2026-10-01;
+- no golden records a failure: none contains `error`, `not found`, `##IO`,
+  `undefined` or a panic — the trap GAP-GOL-011 found in six of ZyAudit's — and
+  what they hold are values: matrices, flags such as `convergido: #1`, the
+  audited file's metrics (`总行: 60`), 囲碁's chain and liberty counts;
+- none prints a time, so each matches on every run, and a truncated run does not
+  match one (`zyquality/project/run.sh`).
+
+Making them self-asserting would copy into each suite, by hand, the values its
+golden already holds.
+
 ---
 
 ## What this cost, and what it says about escalating
 
-The program is ~3,060 lines of Zymbol across 25 files — eleven modules, four
-locales, five self-asserting test suites and two runners that are themselves
-Zymbol — built in a day. The only file in it that is not Zymbol is the pty
-harness, and GAP-GOL-009 is why. The findings above are what a domain the language
-had not been asked to serve produced *on the way*, before the program did
-anything interesting.
+When it was escalated the program was ~3,060 lines of Zymbol across 25 files —
+eleven modules, four locales, five self-asserting test suites and two runners
+that are themselves Zymbol — built in a day. The only file in it that was not
+Zymbol was the pty harness, and GAP-GOL-009 is why. That file is gone since
+2026-09-30: today GoL is 42 `.zy` files and ~3,300 lines — sixteen of them the
+two-line screen cases in `δοκιμές/οθόνη/`, each with its key script and golden —
+and nothing in it is written in another language. The findings above are what
+a domain the language had not been asked to serve produced *on the way*, before
+the program did anything interesting.
 
-Three of them (BUG-GOL-001, BUG-GOL-002, BUG-GOL-013) are engine divergences on
-ordinary code, each two engines against one, and none is reachable from the
-corpus because the corpus tests each feature alone. Three more (GAP-GOL-009 to
+Two of them (BUG-GOL-002, BUG-GOL-013) are engine divergences on ordinary
+code, each two engines against one, and neither was reachable from the corpus
+because the corpus tests each feature alone. A third, BUG-GOL-001, was filed as
+one and was not: the engines disagreed on a program the design forbids (MEM-2),
+and the answer was to refuse it, not to make the odd engine agree. Three more (GAP-GOL-009 to
 011) are the same incapacity seen from three sides: **the language cannot observe
 itself running** — it cannot drive an interactive program, cannot capture what
 its own code prints, and cannot read the exit status of anything it starts. That
@@ -601,5 +1187,20 @@ intersections, reproduced without setting out to reproduce it.
 That is the case for escalating. The case against is unchanged and is in the
 retro that opened the project: this is the fifth terminal grid game, `LDV.md`
 § 6 says domain distance is what pays, and a ninth gated application is a
-recurring maintenance bill. **The decision is the author's.** What is settled is
-that the findings exist and are reproducible.
+recurring maintenance bill. The decision was the author's, and it was taken on
+**2026-09-29**: escalate.
+
+What decided it is in the paragraph above, restated as `LDV.md` now records it:
+the grid found little, and the distance that paid was a domain the project moved
+into without setting out to — **an application testing itself from inside the
+language**. No earlier project had been asked to do that in Zymbol. The
+maintenance bill turned out lower than feared: the program crossed MEM-2 and
+HLZ-015 without a change, and its suite is the only one in the gate that agrees
+under all three engines, so it is also the only application the browser engine
+can be graded on.
+
+Escalating cost one change to the program: the batch mode printed `elapsed Nms`,
+a number that differs on every run and so cannot sit in a golden. It now prints
+it only with `--time`. The help text named a `--gens` option that does not exist
+(the option is `--batch`), in all four locales; that was corrected in the same
+change.
