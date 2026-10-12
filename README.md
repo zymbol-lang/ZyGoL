@@ -20,15 +20,20 @@ moment to change language — including in the middle of a run.
 
 ## Why this exists
 
-Not as a demo. This is a **measuring bench**: its job is to say what one generation
-of Life costs in each Zymbol engine, and to record what the language did and did
-not make easy. Findings: [HALLAZGOS.md](HALLAZGOS.md). Numbers: [`μέτρηση/`](μέτρηση/).
+Not as a demo. It began as a **measuring bench**: its job was to say what one
+generation of Life costs in each Zymbol engine, and to record what the language
+did and did not make easy. Findings: [HALLAZGOS.md](HALLAZGOS.md). Numbers:
+[`μέτρηση/`](μέτρηση/).
 
-It is deliberately **not** registered as a Language-Driven Validation project
-(`interpreter/LDV.md`) — LDV §6 says the method *"scales with domain distance, not
-with size"*, and this is the fifth terminal grid game after 囲碁, चतुरङ्गम्, Serpiente
-and Hov veS. Whether it earns that promotion is the author's call; the last section
-of HALLAZGOS.md states both sides.
+Since **2026-09-29** it is a Language-Driven Validation project, the ninth
+(`zymbol-design/LDV.md` § 5.1). It was held back at first on purpose — LDV § 6
+says the method *"scales with domain distance, not with size"*, and this is the
+fifth terminal grid game after 囲碁, चतुरङ्गम्, Serpiente and Hov veS — and
+escalated because its findings earned it: the distance that paid was not the grid
+but an application testing itself from inside the language. The last section of
+HALLAZGOS.md has the argument. Its suite is in the gate as `gol`
+(`zyquality/project/apps.toml`), and it is the one application there that agrees
+under all three engines.
 
 ---
 
@@ -131,7 +136,7 @@ zymbol run ζωή.zy -- --help          # `--` first: -h/--help never reach a pr
 | `-n, --turns N` | stop after N generations |
 | `--run` | start running instead of editing |
 | `-b, --batch` | run with no screen at all and report |
-| `--every K` / `--print` | with `--batch` |
+| `--every K` / `--print` / `--time` | with `--batch`; `--time` adds the elapsed milliseconds |
 | `-L, --lang CODE` | `el` `es` `en` `hi` |
 | `-l, --list` | patterns, themes and languages |
 
@@ -147,7 +152,7 @@ Zymbol identifier and a syntax error in a shell variable name.
 
 ## The four languages
 
-Built against [`interpreter/USERAPPI18N.md`](../interpreter/USERAPPI18N.md), all
+Built against `zymbol-design/USERAPPI18N.md`, all
 fourteen checklist items:
 
 - **The locale is module state, never a parameter.** Not one function in this
@@ -221,21 +226,22 @@ reported which suite failed ([GAP-GOL-011](HALLAZGOS.md#gap-gol-011)).
 | [`εκκίνηση.zy`](δοκιμές/εκκίνηση.zy) | the whole command line, by calling the module | 20 |
 
 The command line is tested by calling `εκκίνηση::ξεκίνα(lang, args)` directly, so
-no shell is needed to drive the program either — though those 20 cases can only
-assert the **exit code**, because a program cannot capture what its own code
-prints ([GAP-GOL-010](HALLAZGOS.md#gap-gol-010)). What the program *said* is
-printed where a human can see it and asserted by nothing.
+no shell is needed to drive the program either; those 20 cases assert the **exit
+code**. What the program *says* is asserted by [`έξοδος.zy`](δοκιμές/έξοδος.zy),
+which runs it as a subscript with its own arguments, `</ ../ζωή.zy -L es --list />`,
+and checks the text against the program's own catalogue — 20 checks
+([GAP-GOL-010](HALLAZGOS.md#gap-gol-010), closed 2026-09-30).
 
-**One test is not in Zymbol, and cannot be.**
-[`δοκιμές/οθόνη.py`](δοκιμές/οθόνη.py) drives the editor through a real pty —
-sixteen cases, including the pattern catalogue, the live language switch, the
-stop conditions and the Hindi digits, and it caught three real defects on its
-first runs. It is not there because Python was convenient. `>>|` errors unless
-the process has a TTY, `<<|` cannot be handed a scripted key sequence, and
-nothing in the language starts a process at all, so **the editor is the one part
-of this program that no Zymbol code can reach**
-([GAP-GOL-009](HALLAZGOS.md#gap-gol-009)). Six applications in this workspace
-draw a screen; none of them tests it.
+**The editor is tested too, and not in Python any more.** Each case in
+[`δοκιμές/οθόνη/`](δοκιμές/οθόνη/) is a two-line program that calls
+`εκκίνηση::ξεκίνα` with its arguments, a `.keys` file with the keys a person would
+press, and a golden holding the last frame: `zymbol run --keys` draws `>>|` on a
+virtual 24×80 screen instead of taking over a terminal
+([GAP-GOL-009](HALLAZGOS.md#gap-gol-009), closed 2026-09-30). Sixteen cases — the
+pattern catalogue, the live language switch, the stop conditions, the Hindi
+digits — graded on both Rust engines by the same gate as everything else. They
+replaced `δοκιμές/οθόνη.py`, which drove the editor through a pty, and with it
+the last file of this program that was not Zymbol.
 
 **The expected values do not come from this program.** The periods, the glider's
 displacement, the populations of the R-pentomino at generations 1/10/20/50, the
