@@ -32,9 +32,9 @@
 | [GAP-GOL-004](#gap-gol-004) | GAP | `zymbol-semantic` | the range-direction warning is a false positive on literal bounds, and cannot be silenced | all three | **FIXED** by GLB-060; the rest **REJECTED** |
 | [GAP-GOL-005](#gap-gol-005) | GAP | `zymbol-cli` | `-h` / `--help` never reach the program | CLI | **CLOSED** — documented 2026-09-29 |
 | [GAP-GOL-006](#gap-gol-006) | GAP | `web/tests/run_one.mjs` | the browser-engine harness cannot pass CLI arguments | harness | **FIXED** 2026-09-29 |
-| [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | **LOCATED** 2026-10-01 — dropping Values; the VM-wide half is ZYVM-010 |
+| [IDEA-GOL-007](#idea-gol-007) | IDEA | `zymbol-vm` | a call per cell costs ~39% under the VM and ~0% under the tree-walker | measurement | **RESOLVED** — by ZYVM-010 (2026-10-10); re-measured 2026-10-21: A/B 1.03 under the VM (was 1.37) |
 | [IDEA-GOL-008](#idea-gol-008) | IDEA | `USERAPPI18N.md` | a written `"1"` inside a plural string defeats the numeral mode, silently | doctrine | **DONE** — § 14 trap 3, checklist item 15 |
-| [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | **FIXED** 2026-09-30 — `zymbol run --keys` |
+| [GAP-GOL-009](#gap-gol-009) | GAP | language | an interactive Zymbol program cannot be tested from Zymbol | all three | **FIXED** 2026-09-30 — `zymbol run --keys`, **except** starting a process with a terminal: registered 2026-10-20 as DIS-ZYE-005 (`ZyEdit/HALLAZGOS.md`) |
 | [GAP-GOL-010](#gap-gol-010) | GAP | language | a program cannot capture what its own code prints | all three | **FIXED** 2026-09-30 — `</ app.zy args… />` |
 | [GAP-GOL-011](#gap-gol-011) | GAP | language | `<\ … \>` discards the exit status of what it ran | all three | **FIXED** 2026-09-30 — soft `##IO` |
 | [IDEA-GOL-012](#idea-gol-012) | IDEA | the LDV applications | 0 of 44 application suites report their result as an exit code | workshop | **DONE** — 22 return their failures, 22 are judged by their golden |
@@ -574,6 +574,13 @@ screen. **None of them tests it.**
 is a design question and not this log's to answer. What is recorded here is the
 incapacity and what it costs.)*
 
+**What this resolution left open — registered 2026-10-20.** The third bullet above, *"nothing in
+the language or in `std/*` starts another process at all, let alone one with a terminal
+attached"*, still holds. `--keys` answered what GoL needed, testing what the editor draws, and
+by design not the real terminal path. Probing it for ZyEdit took a pty driver written in
+Python. It is now `DIS-ZYE-005` in `ZyEdit/HALLAZGOS.md`, where its cost to ZyEdit's stage 4
+(a language-server client) and stage 5 (a terminal panel) is written down.
+
 **Resolution — FIXED, 2026-09-30 (author's decisions D5 and D11).** A headless
 mode in the CLI, asked for and never guessed: `zymbol run app.zy --keys app.keys`
 draws `>>|` on a virtual 24×80 screen, feeds `<<|` and `<<|?` from the file, and
@@ -990,6 +997,13 @@ is laid out — the hot loop split across two chunks, the frame's footprint.
 Locating it needs a profiler. What stays is the cell,
 `call/function-in-hot-loop` (`time-ratio`, limit 1.30), so the call path cannot
 get dearer without the gate saying so.
+
+**Re-measured 2026-10-21 — RESOLVED.** `μέτρηση/βάση.zy 100` on the release build of
+`interpreter` `c3468c1`, five runs under the VM: A/B 0.97, 1.03, 1.03, 0.99 and 1.04, median
+**1.03**, where it was 1.37. A call per cell no longer shows. The whole generation went from
+618 ms to about 160 ms at side 100. What closed it is `ZYVM-010` (`ZyDDT/HALLAZGOS/zyvm.md`,
+fixed 2026-10-10: the call frame, writing a register, and reusing temporaries), the VM-wide
+half this entry pointed at. The rest of the entry is the state it was filed in.
 
 **Profiled, 2026-10-01 — LOCATED.** With `perf` on a release build compiled
 apart with symbols and frame pointers, the clean pair at side 160 (256 000
