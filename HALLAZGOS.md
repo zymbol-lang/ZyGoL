@@ -999,7 +999,7 @@ Locating it needs a profiler. What stays is the cell,
 get dearer without the gate saying so.
 
 **Re-measured 2026-10-21 — RESOLVED.** `μέτρηση/βάση.zy 100` on the release build of
-`interpreter` `c3468c1`, five runs under the VM: A/B 0.97, 1.03, 1.03, 0.99 and 1.04, median
+`interpreter` `9666867`, five runs under the VM: A/B 0.97, 1.03, 1.03, 0.99 and 1.04, median
 **1.03**, where it was 1.37. A call per cell no longer shows. The whole generation went from
 618 ms to about 160 ms at side 100. What closed it is `ZYVM-010` (`ZyDDT/HALLAZGOS/zyvm.md`,
 fixed 2026-10-10: the call frame, writing a register, and reusing temporaries), the VM-wide
